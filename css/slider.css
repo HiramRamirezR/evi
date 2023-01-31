@@ -94,7 +94,7 @@
 	cursor:pointer;
 	border:none;
 	outline:none;
-    background:#025a85 url(../images/login-arrow.png) no-repeat 10px;       
+    background:#025a85 url(../images/login-arrow.png) no-repeat 10px;
 	-webkit-transition: all 0.2s ease-in-out;
 	-moz-transition: all 0.2s ease-in-out;
 	-o-transition: all 0.2s ease-in-out;
@@ -145,7 +145,7 @@
 	-webkit-border-radius:1em;
 	-moz-border-radius:1em;
 	-o-border-radius:1em;
-	border: 2px solid #F0645D;
+	border: 2px solid #00A2C1;
 }
 .da-arrows{
 	-moz-user-select: none;

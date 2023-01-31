@@ -130,7 +130,7 @@ nav a#pull {
 	nav a#pull {
 		display: block;
 		position: relative;
-		color: #F26D7D;
+		color: #00A2C1;
 		text-align: right;
 		position: absolute;
 		top:20px;
@@ -373,6 +373,7 @@ nav a#pull {
 .slide-text-info h1{
 	font-size: 4.5em;
 	font-family: 'nexa_boldregular';
+  text-shadow: 1px 1px 2px black;
 }
 .slide-text-info{
 	margin-top: 10%;
@@ -414,7 +415,7 @@ nav a#pull {
 	font-size: 0.9em;
 }
 .features-grid h3 a:hover{
-	color:#F06464;
+	color:#00A2C1;
 	text-decoration:none;
 }
 .features-grid p{
@@ -480,7 +481,7 @@ p.img_slider{
 }
 .feature p span{
 	display:block;
-	color:#F06464;
+	color:#00A2C1;
 }
 p.img_slider1{
 	width:100%;
@@ -499,7 +500,7 @@ p.img_slider1{
 	padding:3em 0 0 0;
 }
 .gallery h3{
-	color:#F0645D;
+	color:#00A2C1;
 	font-size:3em;
 	font-weight:700;
 }
@@ -511,7 +512,7 @@ p.img_slider1{
 /*-----*/
 /*----- start-download-----*/
 .download{
-	background: #DE5D5D;
+	background: #00A2C1;
 	padding: 7em 0;
 }
 .download-left{
@@ -666,7 +667,7 @@ a.cl-icon8-l span{
 	color:#666;
 }
 .footer-left p a:hover{
-	color:#DE5D5D;
+	color:#00A2C1;
 	text-decoration:none;
 }
 .footer-right p{
@@ -694,11 +695,11 @@ a.cl-icon8-l span{
 	margin-right: 2%;
 }
 .footer-right input[type="text"]:hover{
-	border-color:#DE5D5D;
-	color:#DE5D5D;
+	border-color:#00A2C1;
+	color:#00A2C1;
 }
 .footer-right input[type="submit"]{
-	background: #F06464;
+	background: #00A2C1;
 	outline: none;
 	padding: 0.8em 2em;
 	color: #fff;
@@ -746,6 +747,7 @@ a.cl-icon8-l span{
  }
  .slide-text-info h1 {
 	font-size: 2.5em;
+  text-shadow: 1px 1px 2px black;
  }
  .callbacks_tabs {
 	left: 42%;
@@ -900,12 +902,12 @@ p.cousel_demo{
 }
 @media (max-width:768px){
  .top-nav ul li.active a, .top-nav ul li a:hover {
-	color: #F0645D;
+	color: #00A2C1;
   }
   .top-nav ul li a {
 	font-size: 0.8125em;
 	padding:0px;
-	color: #F0645D;
+	color: #00A2C1;
  }
  .download {
 	padding: 10px 0;
@@ -997,12 +999,13 @@ p.cousel_demo{
 	margin-top: 10px;
  }
  .rslides {
-	background:#df5d5d;
+	background:#00A2C1;
 	min-height:150px;
  }
  .slide-text-info h1 {
 	font-size: 1.1em;
 	margin-top: 38px;
+  text-shadow: 1px 1px 2px black;
  }
  .callbacks_tabs {
 	left:25%;
