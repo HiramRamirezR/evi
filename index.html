@@ -1,0 +1,464 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Educación para la Vida</title>
+		<link href="css/bootstrap.css" rel='stylesheet' type='text/css' />
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		 <script src="js/jquery.min.js"></script>
+		 <!-- Custom Theme files -->
+		<link href="css/theme-style.css" rel='stylesheet' type='text/css' />
+   		 <!-- Custom Theme files -->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+		</script>
+		<!----font-Awesome----->
+   		<link rel="stylesheet" href="fonts/css/font-awesome.min.css">
+   		<!----font-Awesome----->
+		<!----webfonts---->
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800' rel='stylesheet' type='text/css'>
+		<!----//webfonts---->
+		<!----start-top-nav-script---->
+		<script>
+			$(function() {
+				var pull 		= $('#pull');
+					menu 		= $('nav ul');
+					menuHeight	= menu.height();
+				$(pull).on('click', function(e) {
+					e.preventDefault();
+					menu.slideToggle();
+				});
+				$(window).resize(function(){
+	        		var w = $(window).width();
+	        		if(w > 320 && menu.is(':hidden')) {
+	        			menu.removeAttr('style');
+	        		}
+	    		});
+			});
+		</script>
+		<!----//End-top-nav-script---->
+		<!----start-slider-script---->
+			<script src="js/responsiveslides.min.js"></script>
+			 <script>
+			    // You can also use "$(window).load(function() {"
+			    $(function () {
+			      // Slideshow 4
+			      $("#slider4").responsiveSlides({
+			        auto: true,
+			        pager: true,
+			        nav: true,
+			        speed: 500,
+			        namespace: "callbacks",
+			        before: function () {
+			          $('.events').append("<li>before event fired.</li>");
+			        },
+			        after: function () {
+			          $('.events').append("<li>after event fired.</li>");
+			        }
+			      });
+
+			    });
+			  </script>
+			<!----//End-slider-script---->
+			<!---- Slider ------>
+	 <link rel="stylesheet" href="css/slider.css" type="text/css" />
+	<script type="text/javascript" src="js/jquery.cslider.js"></script>
+	<script type="text/javascript" src="js/modernizr.custom.28468.js"></script>
+	<script type="text/javascript">
+			$(function() {
+
+				$('#da-slider').cslider({
+					autoplay	: true,
+					bgincrement	: 450
+				});
+
+			});
+		</script>
+		<script type="text/javascript">
+			$(function() {
+
+				$('#da-slider1').cslider({
+					autoplay	: true,
+					bgincrement	: 450
+				});
+
+			});
+		</script>
+</head>
+	<body>
+		<!-----start-top-header----->
+		<div id="inicio" class="top-header">
+		<!-- Slideshow 4 -->
+			    <div  id="top" class="callbacks_container">
+			      <ul class="rslides" id="slider4">
+			        <li>
+			          <img src="images/slide01.png" alt="">
+			          <div class="caption text-center">
+			          	<div class="slide-text-info">
+			          		<h1>Educación para la Vida</h1>
+			          	</div>
+			          </div>
+			        </li>
+			        <li>
+			          <img src="images/slide02.png" alt="">
+			          <div class="caption text-center">
+			          	<div class="slide-text-info">
+			          		<h1>Escuela Montessori</h1>
+			          	</div>
+			          </div>
+			        </li>
+			        <li>
+			          <img src="images/slide03.png" alt="">
+			           <div class="caption text-center">
+			           	<div class="slide-text-info">
+			          		<h1>Fundada en 1993</h1>
+			          	</div>
+			          </div>
+			        </li>
+			      </ul>
+			    </div>
+			    <div class="clear"> </div>
+			<!---- //End-slider----->
+		<!-----start-conatiner---->
+		<div class="container">
+			<!-----start-header---->
+			<div class="header">
+				<div class="container">
+				<div class="logo">
+					<a href="#">
+            <img src="images/logo.png" title="logo" />
+          </a>
+				</div>
+				<!----start-top-nav---->
+				 <nav class="top-nav">
+					<ul class="top-nav">
+						<li class="active"><a href="#inicio" class="scroll">Inicio</a></li>
+						<li class="page-scroll"><a href="#filosofia" class="scroll">Filosofía</a></li>
+						<li class="page-scroll"><a href="#niveles" class="scroll">Niveles</a></li>
+						<li class="page-scroll"><a href="#caracteristicas" class="scroll">Características</a></li>
+						<li class="page-scroll"><a href="#galeria" class="scroll">Galería</a></li>
+						<li class="contatct-active" class="page-scroll"><a href="#ambiente" class="scroll">Ambiente </a></li>
+						<li class="page-scroll"><a href="#comp" class="scroll">Compatibility</a></li>
+					</ul>
+					<a href="#" id="pull"><img src="images/nav-icon.png" title="menu" /></a>
+				  </nav>
+
+				<div class="clear"> </div>
+			</div>
+			<!-----//End-header---->
+			</div>
+			<!-----start-top-header----->
+		</div>
+		</div>
+		<!-----start-features----->
+		<div id="filosofia" class="features text-center">
+			<div class="container">
+				<h2>Filosofía</h2>
+				<!---- start-features-grids------>
+					<div class="features-grids text-center">
+						<div class="col-md-4 features-grid">
+							<p>“Ningún ser humano puede ser
+                educado por otra persona. Cada
+                individuo tiene que hacer las cosas
+                por sí mismo, por que de otra forma
+                nunca llegará a aprenderlas.”</p>
+                <i>María Montessori</i>
+						</div>
+            <div class="col-md-4 features-grid">
+							<p>"La mano es la principal maestra del
+                niño. Para que pueda aprender debe
+                haber concentración y la mejor
+                manera para que un niño se concentre
+                es fijando su atención en el trabajo
+                que efectúa con sus manos."</p>
+                <i>María Montessori</i>
+						</div>
+					</div>
+				<!---- //End-features-grids------>
+			</div>
+		</div>
+		<!-----//End-features----->
+		<!-----start-Share instantly----->
+		<div id="niveles" class="Share-instantly">
+			<div class="container">
+				<div class="col-md-5 Share-instantly-left">
+				</div>
+				<div class="col-md-7 Share-instantly-right">
+					<h3>Niveles</h3>
+					<p class="head-para">Kinder, Primaria y Secundaria.</p>
+					<!----- start-Share-instantly-slider---->
+					 <!-- Prettify -->
+						<link href="css/owl.carousel.css" rel="stylesheet">
+					    <script src="js/owl.carousel.js"></script>
+					    <script>
+						    $(document).ready(function() {
+						      $("#owl-demo , #owl-demo1").owlCarousel({
+						        items : 1,
+						        lazyLoad : true,
+						        autoPlay : true,
+						      });
+						    });
+					    </script>
+					    <script>
+						    $(document).ready(function() {
+						      $("#owl-demo3").owlCarousel({
+						        items : 4,
+						        lazyLoad : true,
+						        autoPlay : true,
+						        navigation: false,
+						        pagination: false,
+						      });
+						    });
+					    </script>
+					<!----- //End-Share-instantly-slider---->
+					<!-- start content_slider -->
+					     <div class="slider">
+						  	 <div id="da-slider" class="da-slider">
+                  <div class="da-slide">
+                    <div class="da-img"><img src="images/logo.png" class="img-responsive" alt=" " /></div>
+                    <div class="slide-text">
+                    <p>Casa de niños (Kinder)</p>
+                    </div>
+                    <div class="clear"></div>
+                  </div>
+                  <div class="da-slide">
+                    <div class="da-img"><img src="images/share-slide-pic.png"   class="img-responsive" alt=" " /></div>
+                    <div class="slide-text">
+                      <p>Taller I (1° a 3° de Primaria)</p>
+                    </div>
+                    <div class="clear"></div>
+                  </div>
+                  <div class="da-slide">
+                    <div class="da-img"><img src="images/share-slide-pic.png"  class="img-responsive" alt=" " /></div>
+                    <div class="slide-text">
+                      <p>Taller II (4° a 6° de Primaria)</p>
+                    </div>
+                    <div class="clear"></div>
+                  </div>
+                  <div class="da-slide">
+                    <div class="da-img"><img src="images/share-slide-pic.png"  class="img-responsive" alt=" " /></div>
+                    <div class="slide-text">
+                      <p>Taller III (Secundaria)</p>
+                    </div>
+                    <div class="clear"></div>
+                  </div>
+							 </div>
+						</div>
+				</div>
+				<div class="clearfix"> </div>
+			</div>
+		</div>
+		<div class="clearfix"> </div>
+		<!-----//End-Share instantly----->
+		<!-----start-New Feature------>
+		<div id="caracteristicas" class="feature">
+			<div class="container">
+				<div class="col-md-7 feature-left">
+					<h3>Características</h3>
+					<!-- <p class="head-para">Mauris euismod ultrices nisl sit amet luctus. Donec volutpat arcu ullamcorper facilisis vulputate. Sed auctor pulvinar ornare. Donec gravida. </p> -->
+					 <div class="slider">
+						  	 <div id="da-slider1" class="da-slider1">
+								<div class="da-slide">
+								  <div class="da-img"><img src="images/brush.png" class="img-responsive" alt=" " /></div>
+								  <div class="slide-text">
+									 <p>Los niños tienen la oportunidad de trabajar
+                    sin ser forzados a llevar el ritmo del grupo, ya
+                    sea para alcanzarlos o para esperarlos. El
+                    grupo no define ni limita el avance de cada
+                    niño.</p>
+								  </div>
+								  <div class="clear"></div>
+								</div>
+								<div class="da-slide">
+								  <div class="da-img"><img src="images/brush.png" class="img-responsive" alt=" " /></div>
+								  <div class="slide-text">
+									 <p>Los niños aprenden en un ambiente de tolerancia
+                    donde el abuso o las burlas no tienen lugar, antes
+                    bien, se promueven el diálogo y la unidad.</p>
+								  </div>
+								  <div class="clear"></div>
+								</div>
+								<div class="da-slide">
+								  <div class="da-img"><img src="images/brush.png" class="img-responsive" alt=" " /></div>
+								  <div class="slide-text">
+									 <p>Los niños hacen las cosas porque quieren hacerlas y
+                    no porque se les impone, de esa manera se
+                    esfuerzan establecer sus metas y alcanzar sus
+                    objetivos de forma personal.</p>
+								  </div>
+								  <div class="clear"></div>
+								</div>
+                <div class="da-slide">
+								  <div class="da-img"><img src="images/brush.png" class="img-responsive" alt=" " /></div>
+								  <div class="slide-text">
+									 <p>Los niños tienen gran libertad en el trabajo
+                    que realizan a diario, lo que les permite
+                    desarrollar seguridad y dejan de buscar la
+                    aprobación de un adulto constantemente.</p>
+								  </div>
+								  <div class="clear"></div>
+								</div>
+						    </div>
+						</div>
+				</div>
+				<div class="col-md-5 feature-right">
+					 <span> </span>
+				</div>
+			</div>
+		</div>
+		<!-----//End-New Feature------>
+		<!----- start-gallery----->
+		<div id="galeria" class="gallery">
+			<div class="container">
+				<h3>Galería</h3>
+				<!-- <p>Mauris euismod ultrices nisl sit amet luctus. Donec volutpat arcu ullamcorper facilisis vulputate. Sed auctor pulvinar ornare. Donec gravida. </p> -->
+			</div>
+			<div id="owl-demo3" class="owl-carousel owl-carousel2">
+				                <div class="item">
+				                	<img class="lazyOwl" data-src="images/g1.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Feria de las Ciencias</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g2.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Semana del Planeta</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g3.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Graduación</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g4.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Lunada de Taller II</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g5.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Día del Padre</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g6.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Huerto</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g7.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Lunada de Taller III</span></p>
+				                	<div class="clearfix"> </div>
+				                </div>
+				                <div class="item">
+				                	<img class="lazyOwl" data-src="images/g8.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Ofrenda</span></p>
+				                	<div class="clearfix"> </div>
+				                </div>
+                        <div class="item">
+				                	<img class="lazyOwl" data-src="images/g9.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Zona Arqueológica</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g10.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Visita al Nido</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g11.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Huerto</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g12.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Presentación de Talentos</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g13.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Ofrenda</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g14.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Visita al Nido</span></p>
+				                </div>
+				                 <div class="item">
+				                	<img class="lazyOwl" data-src="images/g15.jpg" alt="Lazy Owl Image">
+				                	<p class="img_slider"><span class="g-title">Clase de Música</span></p>
+				                	<div class="clearfix"> </div>
+				                </div>
+				                <!-- <div class="clearfix"> </div> -->
+
+			           </div>
+		</div>
+		<!----- //End-gallery----->
+		<!-----start-download---->
+		<div id="ambiente" class="download">
+			<div class="container">
+				<div class="col-md-5 download-left">
+					<a href="#"><span> </span></a>
+				</div>
+				<div class="col-md-7 download-right">
+					<p>Believe me, <br />you don't wanna  <br />miss this app.</p>
+				</div>
+				<div class="clearfix"> </div>
+			</div>
+		</div>
+		<!-----//End-download---->
+		<!----- start-Compatibility----->
+		<div id="comp" class="compatibility">
+			<div class="container">
+				<h3>Compatibility</h3>
+				<div class="compatibility-grids">
+					<div class="col-md-6 compatibility-left">
+						<h4>iOS</h4>
+						<p>Requires iOS 6.0 or later. Compatible with iPhone, iPad, and iPod touch. This app is optimized for iPhone 5.</p>
+						<ul class="list-unstyled list-inline">
+							<li><a class="cl-icon1" href="#"><span> </span></a></li>
+							<li><a class="cl-icon2" href="#"><span> </span></a></li>
+							<li><a class="cl-icon3" href="#"><span> </span></a></li>
+							<li><a class="cl-icon4" href="#"><span> </span></a></li>
+						</ul>
+					</div>
+					<div class="col-md-6 compatibility-right">
+						<h4>Android</h4>
+						<p>Compatible with Android KitKat 4.4 or later.Support for x86 devices (i.e. Samsung Galaxy Tab 3 10.1).</p>
+						<ul class="list-unstyled list-inline">
+							<li><a class="cl-icon1-l" href="#"><span> </span></a></li>
+							<li><a class="cl-icon2-l" href="#"><span> </span></a></li>
+							<li><a class="cl-icon3-l" href="#"><span> </span></a></li>
+							<li><a class="cl-icon4-l" href="#"><span> </span></a></li>
+							<li><a class="cl-icon5-l" href="#"><span> </span></a></li>
+							<li><a class="cl-icon6-l" href="#"><span> </span></a></li>
+							<li><a class="cl-icon7-l" href="#"><span> </span></a></li>
+							<li><a class="cl-icon8-l" href="#"><span> </span></a></li>
+						</ul>
+					</div>
+					<div class="clearfix"> </div>
+				</div>
+			</div>
+		</div>
+		<!----- //End-Compatibility----->
+		<!-----start-footer----->
+		<div class="footer">
+			<div class="container">
+				<div class="col-md-7 footer-left">
+					<p>Educación para la Vida - Ciclo Escolar 2022 - 2023</p>
+				</div>
+
+				<div class="clearfix"> </div>
+			</div>
+			<a href="#top" id="toTop" style="display: block;"> <span id="toTopHover" style="opacity: 1;"> </span></a>
+			<!---- start-smoth-scrolling---->
+			<script type="text/javascript">
+				$(function() {
+				  $('a[href*=#]:not([href=#])').click(function() {
+				    if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+
+				      var target = $(this.hash);
+				      target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+				      if (target.length) {
+				        $('html,body').animate({
+				          scrollTop: target.offset().top
+				        }, 1000);
+				        return false;
+				      }
+				    }
+				  });
+					});
+			</script>
+			<!---- //End-smoth-scrolling---->
+		</div>
+		<!-----//End-footer----->
+		<!-----//End-conatiner---->
+	</body>
+</html>
