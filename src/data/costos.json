@@ -1,0 +1,53 @@
+{
+  "ciclo": "2026 - 2027",
+  "niveles": [
+    {
+      "nombre": "Casa de Niños",
+      "grado": "Kinder",
+      "costos": {
+        "inscripcion": 7000,
+        "material": 2500,
+        "fauna": 1100,
+        "ingles": 1500,
+        "mensualidades": 11,
+        "pagoMensual": 3000
+      }
+    },
+    {
+      "nombre": "Taller I",
+      "grado": "1° a 3° de Primaria",
+      "costos": {
+        "inscripcion": 8000,
+        "material": 2500,
+        "fauna": 1100,
+        "ingles": 1500,
+        "mensualidades": 11,
+        "pagoMensual": 3300
+      }
+    },
+    {
+      "nombre": "Taller II",
+      "grado": "4° a 6° de Primaria",
+      "costos": {
+        "inscripcion": 9000,
+        "material": 2500,
+        "fauna": 1100,
+        "ingles": 1500,
+        "mensualidades": 11,
+        "pagoMensual": 3500
+      }
+    },
+    {
+      "nombre": "Taller III",
+      "grado": "Secundaria",
+      "costos": {
+        "inscripcion": 10000,
+        "material": 2500,
+        "fauna": 1100,
+        "ingles": 1500,
+        "mensualidades": 11,
+        "pagoMensual": 3500
+      }
+    }
+  ]
+}

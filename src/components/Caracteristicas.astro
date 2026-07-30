@@ -1,0 +1,44 @@
+---
+const caracteristicas = [
+  { img: '/images/brush01.png', texto: 'Los niños trabajan a su propio ritmo. El grupo no define ni limita el avance de cada niño.' },
+  { img: '/images/brush02.png', texto: 'Los niños aprenden en un ambiente de tolerancia donde se promueven el diálogo y la unidad.' },
+  { img: '/images/brush03.png', texto: 'Los niños hacen las cosas porque quieren hacerlas, así se esfuerzan por alcanzar sus objetivos de forma personal.' },
+  { img: '/images/brush04.png', texto: 'Los niños trabajan con libertad, así desarrollan seguridad y no buscan la aprobación del adulto constantemente.' },
+];
+---
+
+<div id="caracteristicas" class="feature">
+  <div class="container">
+    <div class="feature-left">
+      <h3>Características</h3>
+      <div class="caract-carousel">
+        <div class="caract-track" id="caractTrack">
+          {caracteristicas.map((c) => (
+            <div class="caract-slide">
+              <img src={c.img} alt="" loading="lazy" />
+              <div class="slide-text"><p>{c.texto}</p></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 2em;">
+        <button class="caract-cta open-modal">Conoce más sobre nosotros</button>
+      </div>
+    </div>
+    <div class="feature-right">
+      <span></span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const track = document.getElementById('caractTrack');
+  if (track) {
+    let current = 0;
+    const slides = track.children;
+    setInterval(() => {
+      current = (current + 1) % slides.length;
+      track.style.transform = `translateX(-${current * 100}%)`;
+    }, 4500);
+  }
+</script>

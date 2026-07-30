@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title="Blog Montessori | Educación para la Vida" description="Artículos sobre educación Montessori, desarrollo infantil y vida escolar.">
+  <div style="background: rgba(38,38,38,0.95); position: fixed; top: 0; left: 0; right: 0; z-index: 9999; padding: 10px 20px; display: flex; align-items: center; gap: 15px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+      <img src="/images/logo.png" width="35" alt="Educación para la Vida" />
+      <span style="color: #fff; font-family: 'nexa_boldregular'; font-size: 1.1em;">Educación para la Vida</span>
+    </a>
+    <a href="/" style="color: #fff; text-decoration: none; margin-left: auto; font-size: 0.9em; font-weight: 700; background: #00A2C1; padding: 6px 18px; border-radius: 20px; transition: background 0.3s;" onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">&larr; Volver al inicio</a>
+  </div>
+  <div style="padding: 100px 0 40px; max-width: 800px; margin: 0 auto; padding-left: 15px; padding-right: 15px;">
+    <h1 style="font-family: 'nexa_boldregular'; font-size: 2.5em; color: #333; margin-bottom: 0.5em;">Blog Montessori</h1>
+    <p style="color: #777; margin-bottom: 1.5em;">Artículos sobre educación, desarrollo infantil y vida en la escuela.</p>
+
+    <div id="searchWrapper" style="position: sticky; top: 68px; z-index: 100; padding: 12px 0; margin-bottom: 0.5em; transition: background 0.3s;">
+      <div style="position: relative;">
+        <input id="blogSearch" type="text" placeholder="Buscar artículos..." style="width: 100%; padding: 14px 20px 14px 48px; border: 2px solid #e0e0e0; border-radius: 30px; font-size: 1em; outline: none; transition: border-color 0.3s, box-shadow 0.3s; background: #fff; color: #444;" onfocus="this.style.borderColor='#00A2C1'" onblur="this.style.borderColor='#e0e0e0'" />
+        <span style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #bbb; font-size: 1.2em; pointer-events: none;">🔍</span>
+      </div>
+    </div>
+
+    <p id="noResults" style="color: #999; text-align: center; display: none;">No se encontraron artículos.</p>
+
+    <div id="postsGrid" style="display: grid; gap: 25px;">
+      {posts.map((post) => (
+        <article class="post-card" data-search={post.data.title + ' ' + post.data.description + ' ' + post.data.tags.join(' ')} style="background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border: 1px solid #eee;">
+          <a href={`/blog/${post.slug}`} style="text-decoration: none; color: inherit;">
+            <h2 style="font-size: 1.4em; color: #333; margin-bottom: 0.3em; font-family: 'nexa_boldregular';">{post.data.title}</h2>
+          </a>
+          <div style="font-size: 0.85em; color: #999; margin-bottom: 0.8em;">
+            {post.data.pubDate.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })} — {post.data.author}
+          </div>
+          <p style="color: #666; line-height: 1.6;">{post.data.description}</p>
+          {post.data.tags.length > 0 && (
+            <div style="margin-top: 1em; display: flex; gap: 8px; flex-wrap: wrap;">
+              {post.data.tags.map((tag) => (
+                <span style="background: #00A2C1; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.8em;">{tag}</span>
+              ))}
+            </div>
+          )}
+        </article>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  function normalize(str) {
+    return str.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f.,;:!¿?¡()"']/g, '');
+  }
+
+  const input = document.getElementById('blogSearch');
+  const grid = document.getElementById('postsGrid');
+  const noResults = document.getElementById('noResults');
+  const wrapper = document.getElementById('searchWrapper');
+
+  input.addEventListener('input', () => {
+    const q = normalize(input.value);
+    let visible = 0;
+
+    grid.querySelectorAll('.post-card').forEach(card => {
+      const match = !q || normalize(card.dataset.search).includes(q);
+      card.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+  });
+
+  window.addEventListener('scroll', () => {
+    wrapper.style.background = window.scrollY > 80 ? 'rgba(255,255,255,0.95)' : 'transparent';
+  }, { passive: true });
+</script>

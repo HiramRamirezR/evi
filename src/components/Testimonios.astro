@@ -1,0 +1,17 @@
+---
+import testimonios from '../data/testimonios.json';
+---
+
+<div id="testimonios" class="testimonios">
+  <div class="container">
+    <h3>Lo que dicen de nosotros</h3>
+    <div class="testimonios-grid">
+      {testimonios.map((t) => (
+        <div class="testimonio-card">
+          <p>"{t.texto}"</p>
+          <div class="testimonio-autor">— {t.autor}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>

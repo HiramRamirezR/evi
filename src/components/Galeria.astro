@@ -1,0 +1,65 @@
+---
+const fotos = [
+  { src: '/images/g1.jpg', titulo: 'Feria de las Ciencias' },
+  { src: '/images/g2.jpg', titulo: 'Semana del Planeta' },
+  { src: '/images/g3.jpg', titulo: 'Graduación' },
+  { src: '/images/g4.jpg', titulo: 'Lunada de Taller II' },
+  { src: '/images/g5.jpg', titulo: 'Día del Padre' },
+  { src: '/images/g6.jpg', titulo: 'Huerto' },
+  { src: '/images/g7.jpg', titulo: 'Lunada de Taller III' },
+  { src: '/images/g8.jpg', titulo: 'Ofrenda' },
+  { src: '/images/g9.jpg', titulo: 'Zona Arqueológica' },
+  { src: '/images/g10.jpg', titulo: 'Visita al Nido' },
+  { src: '/images/g11.jpg', titulo: 'Huerto' },
+  { src: '/images/g12.jpg', titulo: 'Presentación de Talentos' },
+  { src: '/images/g13.jpg', titulo: 'Ofrenda' },
+  { src: '/images/g14.jpg', titulo: 'Visita al Nido' },
+  { src: '/images/g15.jpg', titulo: 'Clase de Música' },
+];
+---
+
+<div id="galeria" class="gallery">
+  <div class="container">
+    <h3>Galería</h3>
+  </div>
+  <div class="gallery-grid" id="galleryGrid">
+    {fotos.map((foto) => (
+      <a href={foto.src} class="gallery-item glightbox" data-glightbox={`title: ${foto.titulo}`}>
+        <img src={foto.src} alt={foto.titulo} loading="lazy" />
+        <span class="g-title">{foto.titulo}</span>
+      </a>
+    ))}
+  </div>
+</div>
+
+<script>
+  import GLightbox from 'glightbox';
+
+  const lightbox = GLightbox({
+    selector: '.glightbox',
+    touchNavigation: true,
+    loop: true,
+    zoomable: true,
+    descPosition: 'bottom',
+  });
+</script>
+
+<style is:global>
+  .gslide-description {
+    background: rgba(0,0,0,0.7) !important;
+    padding: 20px 24px !important;
+    border-radius: 0 !important;
+  }
+  .gslide-description .gslide-title {
+    color: #fff !important;
+    font-size: 1.3em !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    line-height: 1.4 !important;
+  }
+  .gslide-description .gslide-desc {
+    color: #ddd !important;
+    font-size: 1em !important;
+    line-height: 1.5 !important;
+  }
+</style>

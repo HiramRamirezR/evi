@@ -1,0 +1,67 @@
+---
+const navItems = [
+  { href: '#inicio', label: 'Inicio' },
+  { href: '#filosofia', label: 'Filosofía' },
+  { href: '#niveles', label: 'Niveles' },
+  { href: '#caracteristicas', label: 'Características' },
+  { href: '#galeria', label: 'Galería' },
+  { href: '#testimonios', label: 'Testimonios' },
+  { href: '#horario', label: 'Horario' },
+  { href: '#costos', label: 'Costos' },
+  { href: '#contacto', label: 'Contacto' },
+  { href: '/blog', label: 'Blog' },
+];
+---
+
+<div id="inicio" class="top-header">
+  <div class="header" id="mainHeader">
+    <div class="container">
+      <div class="logo">
+        <a href="#"><img src="/images/logo.png" alt="Educación para la Vida" /></a>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Menú">
+        <img src="/images/nav-icon.png" alt="Menú" />
+      </button>
+      <nav class="top-nav">
+        <ul id="navMenu">
+          {navItems.map((item) => (
+            <li class={item.href === '#inicio' ? 'active' : 'page-scroll'}>
+              <a href={item.href} class="scroll">{item.label}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script>
+  const header = document.getElementById('mainHeader');
+  const navToggle = document.getElementById('navToggle');
+  const navMenu = document.getElementById('navMenu');
+
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  if (navToggle && navMenu) {
+    navToggle.addEventListener('click', () => {
+      navMenu.classList.toggle('open');
+    });
+  }
+
+  document.querySelectorAll('a.scroll').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        const offset = header.offsetHeight;
+        const top = target.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+      navMenu.classList.remove('open');
+    });
+  });
+</script>

@@ -1,0 +1,35 @@
+---
+import config from '../data/config.json';
+import costos from '../data/costos.json';
+---
+
+<div id="contacto" class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-info">
+        <h4>Educación para la Vida</h4>
+        <p>Escuela Montessori fundada en 1993</p>
+        <p><strong>Dirección:</strong> {config.contacto.direccion}, Puebla, México</p>
+        <p><strong>Teléfono:</strong> <a href={`tel:${config.contacto.telefono}`}>{config.contacto.telefono}</a></p>
+        <p><strong>Email:</strong> <a href={`mailto:${config.contacto.email}`}>{config.contacto.email}</a></p>
+        <p><strong>WhatsApp:</strong> <a href={config.contacto.whatsappLink} target="_blank" rel="noopener noreferrer">+52 {config.contacto.telefono}</a></p>
+        <p><strong>Horario:</strong> {config.horario.dias}, {config.horario.horario}</p>
+      </div>
+      <div class="footer-map">
+        <h4>Ubicación</h4>
+        <iframe src={config.contacto.googleMapsEmbed} allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación de la escuela"></iframe>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Educación para la Vida - Ciclo Escolar {costos.ciclo}</p>
+    </div>
+  </div>
+  <a href="#inicio" id="toTop" aria-label="Volver arriba"></a>
+</div>
+
+<script>
+  const toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', () => {
+    toTop.style.display = window.scrollY > 400 ? 'block' : 'none';
+  });
+</script>

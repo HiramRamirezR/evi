@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import config from '../../data/config.json';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+const postUrl = `${config.site.url}/blog/${post.slug}/`;
+const ogImage = post.data.image || config.redes.ogImage;
+---
+
+<BaseLayout title={`${post.data.title} | Blog Montessori`} description={post.data.description} ogImage={ogImage} ogUrl={postUrl}>
+  <div style="background: rgba(38,38,38,0.95); position: fixed; top: 0; left: 0; right: 0; z-index: 9999; padding: 10px 20px; display: flex; align-items: center; gap: 15px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+      <img src="/images/logo.png" width="35" alt="Educación para la Vida" />
+      <span style="color: #fff; font-family: 'nexa_boldregular'; font-size: 1.1em;">Educación para la Vida</span>
+    </a>
+    <a href="/blog" style="color: #fff; text-decoration: none; margin-left: auto; font-size: 0.9em; font-weight: 700; background: #00A2C1; padding: 6px 18px; border-radius: 20px; transition: background 0.3s;" onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">&larr; Ver todos</a>
+  </div>
+  <div style="padding: 100px 0 40px; max-width: 750px; margin: 0 auto; padding-left: 15px; padding-right: 15px;">
+    <article>
+      <h1 style="font-family: 'nexa_boldregular'; font-size: 2em; color: #333; margin-bottom: 0.3em;">{post.data.title}</h1>
+      <div style="font-size: 0.9em; color: #999; margin-bottom: 1.5em;">
+        {post.data.pubDate.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })} — {post.data.author}
+      </div>
+      {post.data.tags.length > 0 && (
+        <div style="margin-bottom: 1.5em; display: flex; gap: 8px; flex-wrap: wrap;">
+          {post.data.tags.map((tag) => (
+            <span style="background: #00A2C1; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.8em;">{tag}</span>
+          ))}
+        </div>
+      )}
+      <div class="blog-content" style="color: #444; line-height: 1.8; font-size: 1.05em;">
+        <Content />
+      </div>
+    </article>
+
+    <div style="margin-top: 3em; padding-top: 2em; border-top: 1px solid #eee;">
+      <p style="font-weight: 600; color: #555; margin-bottom: 1em;">Compartir este artículo</p>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href={`https://wa.me/?text=${encodeURIComponent(post.data.title + ' - ' + postUrl)}`} target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 8px; background: #25D366; color: #fff; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 0.9em; font-weight: 600; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">WhatsApp</a>
+        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`} target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 8px; background: #1877F2; color: #fff; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 0.9em; font-weight: 600; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Facebook</a>
+        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.data.title + ' ' + postUrl)}`} target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 8px; background: #000; color: #fff; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 0.9em; font-weight: 600; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">X / Twitter</a>
+        <button class="copy-link-btn" data-url={postUrl} style="display: flex; align-items: center; gap: 8px; background: #666; color: #fff; border: none; padding: 10px 20px; border-radius: 30px; font-size: 0.9em; font-weight: 600; cursor: pointer; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Copiar enlace</button>
+      </div>
+    </div>
+  </div>
+
+  <style is:global>
+    .blog-content h2 { font-size: 1.5em; color: #333; margin: 1.5em 0 0.5em; font-family: 'nexa_boldregular'; }
+    .blog-content h3 { font-size: 1.2em; color: #444; margin: 1em 0 0.5em; }
+    .blog-content p { margin-bottom: 1em; }
+    .blog-content ul, .blog-content ol { margin-bottom: 1em; padding-left: 1.5em; }
+    .blog-content li { margin-bottom: 0.3em; }
+    .blog-content strong { color: #333; }
+    .blog-content blockquote { border-left: 4px solid #00A2C1; padding-left: 1em; margin: 1em 0; color: #666; font-style: italic; }
+  </style>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll('.copy-link-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.url);
+        const orig = btn.textContent;
+        btn.textContent = '¡Copiado!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+      } catch {
+        prompt('Copia este enlace:', btn.dataset.url);
+      }
+    });
+  });
+</script>

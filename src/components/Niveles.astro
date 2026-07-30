@@ -1,0 +1,42 @@
+---
+const niveles = [
+  { img: '/images/share-slide-pic01.png', texto: 'Casa de niños (Kinder)' },
+  { img: '/images/share-slide-pic02.png', texto: 'Taller I (1° a 3° de Primaria)' },
+  { img: '/images/share-slide-pic03.png', texto: 'Taller II (4° a 6° de Primaria)' },
+  { img: '/images/share-slide-pic04.png', texto: 'Taller III (Secundaria)' },
+];
+---
+
+<div id="niveles" class="Share-instantly">
+  <div class="container">
+    <div class="Share-instantly-left">
+      <span></span>
+    </div>
+    <div class="Share-instantly-right">
+      <h3>Niveles</h3>
+      <p class="head-para">Kinder, Primaria y Secundaria.</p>
+      <div class="niveles-carousel">
+        <div class="niveles-track" id="nivelesTrack">
+          {niveles.map((n) => (
+            <div class="nivel-slide">
+              <img src={n.img} alt={n.texto} loading="lazy" />
+              <div class="slide-text"><p>{n.texto}</p></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const track = document.getElementById('nivelesTrack');
+  if (track) {
+    let current = 0;
+    const slides = track.children;
+    setInterval(() => {
+      current = (current + 1) % slides.length;
+      track.style.transform = `translateX(-${current * 100}%)`;
+    }, 4000);
+  }
+</script>

@@ -1,0 +1,156 @@
+---
+import config from '../data/config.json';
+import costos from '../data/costos.json';
+---
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <h3>Quiero más información</h3>
+    <p>¿Qué te gustaría hacer?</p>
+    <div class="modal-checkbox-group">
+      <label>
+        <input type="checkbox" value="Agendar una visita" class="modal-checkbox" data-type="action" />
+        Quiero agendar una visita
+      </label>
+      <label>
+        <input type="checkbox" value="Información sobre costos" class="modal-checkbox" data-type="action" />
+        Quiero información sobre costos
+      </label>
+      <label>
+        <input type="checkbox" value="Un día de prueba" class="modal-checkbox" data-type="action" />
+        Quiero un día de prueba para mi hijo
+      </label>
+      <label>
+        <input type="checkbox" value="Evaluación neuropsicológica" class="modal-checkbox" data-type="action" />
+        Quiero agendar evaluación neuropsicológica
+      </label>
+    </div>
+    <div class="modal-levels-wrapper" id="modalLevels">
+      <p class="modal-levels-label">¿Para qué nivel(es)?</p>
+      <div class="modal-checkbox-group">
+        <label>
+          <input type="checkbox" value="Casa de Niños (Kinder)" class="modal-checkbox" data-type="level" data-nivel="0" />
+          Casa de Niños (Kinder)
+        </label>
+        <label>
+          <input type="checkbox" value="Taller I (1° a 3° de Primaria)" class="modal-checkbox" data-type="level" data-nivel="1" />
+          Taller I (1° a 3° de Primaria)
+        </label>
+        <label>
+          <input type="checkbox" value="Taller II (4° a 6° de Primaria)" class="modal-checkbox" data-type="level" data-nivel="2" />
+          Taller II (4° a 6° de Primaria)
+        </label>
+        <label>
+          <input type="checkbox" value="Taller III (Secundaria)" class="modal-checkbox" data-type="level" data-nivel="3" />
+          Taller III (Secundaria)
+        </label>
+      </div>
+    </div>
+    <button class="modal-submit" id="modalSubmit" data-whatsapp={config.contacto.whatsapp} data-costos={JSON.stringify(costos.niveles)} disabled>Enviar por WhatsApp</button>
+  </div>
+</div>
+
+<script>
+  const overlay = document.getElementById('modalOverlay');
+  const closeBtn = document.getElementById('modalClose');
+  const submitBtn = document.getElementById('modalSubmit');
+  const actionCbs = document.querySelectorAll('.modal-checkbox[data-type="action"]');
+  const levelCbs = document.querySelectorAll('.modal-checkbox[data-type="level"]');
+  const allCbs = document.querySelectorAll('.modal-checkbox');
+  const levelsWrapper = document.getElementById('modalLevels');
+  const niveles = JSON.parse(submitBtn.dataset.costos);
+
+  function fmt(n) {
+    return '$ ' + n.toLocaleString('es-MX') + '.00';
+  }
+
+  function updateLevelsVisibility() {
+    const anyAction = Array.from(actionCbs).some(cb => cb.checked);
+    levelsWrapper.classList.toggle('visible', anyAction);
+  }
+
+  function updateSubmit() {
+    const anyAction = Array.from(actionCbs).some(cb => cb.checked);
+    const anyLevel = Array.from(levelCbs).some(cb => cb.checked);
+    submitBtn.disabled = !(anyAction && anyLevel);
+  }
+
+  function buildMessage() {
+    const lines = ['¡Hola! Me interesa la escuela.'];
+    const checked = Array.from(allCbs).filter(cb => cb.checked);
+
+    const wantsVisit = checked.some(cb => cb.value === 'Agendar una visita');
+    const wantsCostos = checked.some(cb => cb.value === 'Información sobre costos');
+    const wantsPrueba = checked.some(cb => cb.value === 'Un día de prueba');
+    const wantsEval = checked.some(cb => cb.value === 'Evaluación neuropsicológica');
+    const levels = checked.filter(cb => cb.dataset.type === 'level');
+
+    const actions = [];
+    if (wantsVisit) actions.push('Agendar una visita');
+    if (wantsCostos) actions.push('Información sobre costos');
+    if (wantsPrueba) actions.push('Un día de prueba para mi hijo');
+    if (wantsEval) actions.push('Evaluación neuropsicológica para mi hijo');
+    if (actions.length) {
+      lines.push('Me interesa:');
+      actions.forEach(a => lines.push(`- ${a}`));
+    }
+
+    if (levels.length) {
+      lines.push('Nivel(es): ' + levels.map(cb => cb.value).join(', '));
+    }
+
+    if (wantsVisit) {
+      lines.push('Visitas: 2:30 a 4:00 pm con previa cita.');
+    }
+
+    if (wantsPrueba) {
+      lines.push('Día de prueba: mi hijo puede asistir un día sin costo para conocer el ambiente.');
+    }
+
+    if (wantsEval) {
+      lines.push('Evaluación: la directora (neuropsicóloga) evaluará a mi hijo.');
+    }
+
+    if (wantsCostos && levels.length) {
+      lines.push('Costos solicitados:');
+      levels.forEach(cb => {
+        const nivel = niveles[parseInt(cb.dataset.nivel)];
+        lines.push(`  ${nivel.nombre} (${nivel.grado})`);
+        lines.push(`    Inscripción: ${fmt(nivel.costos.inscripcion)}`);
+        lines.push(`    Material: ${fmt(nivel.costos.material)}`);
+        lines.push(`    Fauna: ${fmt(nivel.costos.fauna)}`);
+        lines.push(`    Inglés: ${fmt(nivel.costos.ingles)}`);
+        lines.push(`    ${nivel.costos.mensualidades} Mensualidades: ${fmt(nivel.costos.pagoMensual)}`);
+      });
+    }
+
+    lines.push('Favor de contactarme para agendar.');
+
+    return encodeURIComponent(lines.join('\n'));
+  }
+
+  allCbs.forEach(cb => {
+    cb.addEventListener('change', () => {
+      updateLevelsVisibility();
+      updateSubmit();
+    });
+  });
+
+  submitBtn.addEventListener('click', () => {
+    const msg = buildMessage();
+    const wa = submitBtn.dataset.whatsapp;
+    window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
+    overlay.classList.remove('open');
+  });
+
+  closeBtn.addEventListener('click', () => {
+    overlay.classList.remove('open');
+  });
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove('open');
+    }
+  });
+</script>
