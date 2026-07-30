@@ -1,0 +1,85 @@
+<div id="directora" class="directora">
+  <div class="container">
+    <div class="directora-card">
+      <div class="directora-foto">
+        <img src="/images/tricia.png" alt="Patricia Ramos - Directora" loading="lazy" />
+      </div>
+      <div class="directora-info">
+        <span class="directora-tag">Directora</span>
+        <h2>Patricia Ramos</h2>
+        <p class="directora-sub">Neuropsicóloga | Especialista Montessori</p>
+        <p class="directora-desc">Con más de 30 años de experiencia en el Método Montessori, Patricia ha dedicado su vida a la formación integral de niños y jóvenes. Su enfoque combina el rigor académico con una profunda comprensión del desarrollo infantil, asegurando que cada niño reciba la atención y el ambiente que necesita para florecer.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .directora {
+    padding: 5em 0;
+    background: #f8f9fa;
+  }
+  .directora-card {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+  .directora-foto {
+    flex-shrink: 0;
+  }
+  .directora-foto img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #00A2C1;
+  }
+  .directora-info { flex: 1; }
+  .directora-tag {
+    display: inline-block;
+    background: #00A2C1;
+    color: #fff;
+    font-size: 0.8em;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .directora-info h2 {
+    font-family: 'nexa_boldregular';
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  .directora-sub {
+    color: #00A2C1;
+    font-weight: 600;
+    font-size: 0.95em;
+    margin-bottom: 15px;
+  }
+  .directora-desc {
+    color: #666;
+    line-height: 1.7;
+    font-size: 0.95em;
+  }
+  @media (max-width: 700px) {
+    .directora-card {
+      flex-direction: column;
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .directora-foto img {
+      width: 160px;
+      height: 160px;
+    }
+    .directora-info h2 { font-size: 1.4em; }
+  }
+</style>

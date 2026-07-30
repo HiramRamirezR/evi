@@ -77,7 +77,7 @@ import costos from '../data/costos.json';
   }
 
   function buildMessage() {
-    const lines = ['¡Hola! Me interesa la escuela.'];
+    const lines = ['¡Hola! Me interesa la escuela para mi hijo.'];
     const checked = Array.from(allCbs).filter(cb => cb.checked);
 
     const wantsVisit = checked.some(cb => cb.value === 'Agendar una visita');
@@ -90,9 +90,9 @@ import costos from '../data/costos.json';
     if (wantsVisit) actions.push('Agendar una visita');
     if (wantsCostos) actions.push('Información sobre costos');
     if (wantsPrueba) actions.push('Un día de prueba para mi hijo');
-    if (wantsEval) actions.push('Evaluación neuropsicológica para mi hijo');
+    if (wantsEval) actions.push('Evaluación neuropsicológica');
     if (actions.length) {
-      lines.push('Me interesa:');
+      lines.push('Quiero:');
       actions.forEach(a => lines.push(`- ${a}`));
     }
 
@@ -113,7 +113,7 @@ import costos from '../data/costos.json';
     }
 
     if (wantsCostos && levels.length) {
-      lines.push('Costos solicitados:');
+      lines.push('Costos:');
       levels.forEach(cb => {
         const nivel = niveles[parseInt(cb.dataset.nivel)];
         lines.push(`  ${nivel.nombre} (${nivel.grado})`);
