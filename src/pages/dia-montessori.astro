@@ -1,0 +1,122 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ModalWhatsApp from '../components/ModalWhatsApp.astro';
+import WhatsAppFloat from '../components/WhatsAppFloat.astro';
+
+const ambientes = [
+  {
+    id: 0,
+    nombre: 'Casa de Niños',
+    rango: 'Kinder',
+    img: '/images/share-slide-pic01.png',
+    descripcion: 'Un día en Casa de Niños gira en torno al ciclo de trabajo Montessori: los niños eligen sus actividades dentro de las áreas de vida práctica, sensorial y lenguaje, desarrollando independencia, concentración y orden a su propio ritmo.',
+  },
+  {
+    id: 1,
+    nombre: 'Taller I',
+    rango: '1° a 3° de Primaria',
+    img: '/images/share-slide-pic02.png',
+    descripcion: 'En Taller I los niños profundizan en lenguaje, matemáticas y cultura, trabajando con materiales concretos que hacen tangible cada concepto. Avanzan en lectura, escritura y comprensión de las matemáticas paso a paso.',
+  },
+  {
+    id: 2,
+    nombre: 'Taller II',
+    rango: '4° a 6° de Primaria',
+    img: '/images/share-slide-pic03.png',
+    descripcion: 'En Taller II el trabajo se vuelve más profundo: matemáticas, lenguaje y ciencias con materiales cada vez más abstractos, junto con proyectos e investigaciones en equipo que desarrollan el pensamiento crítico.',
+  },
+  {
+    id: 3,
+    nombre: 'Taller III',
+    rango: 'Secundaria',
+    img: '/images/share-slide-pic04.png',
+    descripcion: 'En Taller III los adolescentes asumen la responsabilidad de su propio aprendizaje: trabajo académico más independiente y especializado, con tutorías, proyectos y una preparación sólida para la preparatoria.',
+  },
+];
+
+const comunes = ['Fauna y vida saludable', 'Música', 'Educación física', 'Inglés'];
+---
+
+<BaseLayout
+  title="Vive un Día Montessori | Educación para la Vida"
+  description="Conoce cómo se vive un día en cada ambiente: Casa de Niños, Taller I, II y III. Actividades Montessori, inglés, música, educación física, fauna y el lunch colectivo."
+>
+  <div style="background: rgba(38,38,38,0.95); position: fixed; top: 0; left: 0; right: 0; z-index: 9999; padding: 10px 20px; display: flex; align-items: center; gap: 15px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+      <img src="/images/logo.png" width="35" alt="Educación para la Vida" />
+      <span style="color: #fff; font-family: 'nexa_boldregular'; font-size: 1.1em;">Educación para la Vida</span>
+    </a>
+    <a href="/" style="color: #fff; text-decoration: none; margin-left: auto; font-size: 0.9em; font-weight: 700; background: #00A2C1; padding: 6px 18px; border-radius: 20px; transition: background 0.3s;" onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">&larr; Volver al inicio</a>
+  </div>
+
+  <div style="padding: 100px 0 40px; max-width: 800px; margin: 0 auto; padding-left: 15px; padding-right: 15px;">
+    <h1 style="font-family: 'nexa_boldregular'; font-size: 2.5em; color: #333; margin-bottom: 0.4em;">Vive un Día Montessori</h1>
+    <p style="color: #666; line-height: 1.7; margin-bottom: 2em;">Todos los ambientes comparten la esencia del método Montessori: los niños eligen su trabajo, avanzan a su propio ritmo y aprenden en comunidad. Además, en todas las edades tienen <strong>fauna y vida saludable</strong>, <strong>música</strong>, <strong>educación física</strong> e <strong>inglés</strong>.</p>
+
+    <div id="diaTabs" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.5em;">
+      {ambientes.map((a) => (
+        <button class="dia-tab" data-id={a.id} style="background: #f2f4f7; color: #444; border: 2px solid #e0e0e0; padding: 10px 20px; border-radius: 30px; font-size: 0.95em; font-weight: 700; cursor: pointer; transition: all 0.3s;">
+          {a.nombre}
+        </button>
+      ))}
+    </div>
+
+    {ambientes.map((a) => (
+      <div class="dia-panel" data-id={a.id} style="display: none; background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border: 1px solid #eee; margin-bottom: 2em;">
+        <h2 style="font-family: 'nexa_boldregular'; font-size: 1.5em; color: #333; margin-bottom: 0.2em;">{a.nombre}</h2>
+        <div style="font-size: 0.85em; color: #999; margin-bottom: 1em; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">{a.rango}</div>
+        <img src={a.img} alt={a.nombre} loading="lazy" style="width: 25%; min-width: 140px; display: block; margin: 0 auto 1.2em; border-radius: 10px;" />
+        <p style="color: #666; line-height: 1.7; margin-bottom: 1.2em;">{a.descripcion}</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          {comunes.map((c) => (
+            <span style="background: #00A2C1; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 0.85em;">{c}</span>
+          ))}
+        </div>
+      </div>
+    ))}
+
+    <div style="background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border: 1px solid #eee; margin-bottom: 2em;">
+      <h2 style="font-family: 'nexa_boldregular'; font-size: 1.5em; color: #333; margin-bottom: 0.5em;">🍽️ Lunch colectivo</h2>
+      <p style="color: #666; line-height: 1.7;">En cada ambiente el lunch es un momento de comunidad: cada día un niño trae comida para todos y se van turnando, de modo que los alumnos no tienen que traer lunch diario. Al comer juntos practican la convivencia, la mesa y la cortesía Montessori.</p>
+    </div>
+
+    <div style="text-align: center;">
+      <p style="color: #777; margin-bottom: 1em;">¿Te gustaría que tu hijo viva la experiencia por un día sin costo?</p>
+      <button class="open-modal" style="background: #00A2C1; color: #fff; border: none; padding: 16px 40px; border-radius: 30px; font-size: 1.05em; font-weight: 700; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">Quiero más información</button>
+    </div>
+  </div>
+
+  <ModalWhatsApp />
+  <WhatsAppFloat />
+</BaseLayout>
+
+<script>
+  function track(eventName, params) {
+    if (typeof gtag === 'function') gtag('event', eventName, params);
+  }
+
+  const tabs = document.querySelectorAll('.dia-tab');
+  const panels = document.querySelectorAll('.dia-panel');
+
+  function showAmbiente(id) {
+    tabs.forEach((t) => {
+      const active = Number(t.dataset.id) === id;
+      t.style.background = active ? '#00A2C1' : '#f2f4f7';
+      t.style.color = active ? '#fff' : '#444';
+      t.style.borderColor = active ? '#00A2C1' : '#e0e0e0';
+    });
+    panels.forEach((p) => {
+      p.style.display = Number(p.dataset.id) === id ? 'block' : 'none';
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const id = Number(tab.dataset.id);
+      showAmbiente(id);
+      track('dia_tab_seleccionado', { ambiente: tab.textContent.trim() });
+    });
+  });
+
+  if (tabs.length) showAmbiente(0);
+</script>

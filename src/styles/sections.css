@@ -73,6 +73,20 @@
   margin-top: 20px;
 }
 
+.dia-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: #00A2C1;
+  font-weight: 700;
+  font-size: 0.95em;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.dia-link:hover {
+  color: #0089a3;
+}
+
 .niveles-track {
   display: flex;
   transition: transform 0.5s ease;
