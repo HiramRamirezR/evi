@@ -16,6 +16,9 @@ const fotos = [
   { src: '/images/g14.jpg', titulo: 'Visita al Nido' },
   { src: '/images/g15.jpg', titulo: 'Clase de Música' },
 ];
+
+const iniciales = 8;
+const ocultas = fotos.length - iniciales;
 ---
 
 <div id="galeria" class="gallery">
@@ -23,12 +26,18 @@ const fotos = [
     <h3>Galería</h3>
   </div>
   <div class="gallery-grid" id="galleryGrid">
-    {fotos.map((foto) => (
-      <a href={foto.src} class="gallery-item glightbox" data-glightbox={`title: ${foto.titulo}`}>
+    {fotos.map((foto, i) => (
+      <a href={foto.src} class={`gallery-item glightbox${i >= iniciales ? ' gallery-hidden' : ''}`} data-glightbox={`title: ${foto.titulo}`}>
         <img src={foto.src} alt={foto.titulo} loading="lazy" />
         <span class="g-title">{foto.titulo}</span>
       </a>
     ))}
+  </div>
+  <div style="text-align: center; margin-top: 2em;">
+    <button id="galeriaToggle" style="background: #00A2C1; color: #fff; border: none; padding: 12px 32px; border-radius: 30px; font-size: 1em; font-weight: 600; cursor: pointer; transition: background 0.3s;"
+      onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">
+      Ver más fotos ({ocultas})
+    </button>
   </div>
 </div>
 
@@ -42,9 +51,32 @@ const fotos = [
     zoomable: true,
     descPosition: 'bottom',
   });
+
+  const toggleBtn = document.getElementById('galeriaToggle');
+  const ocultasItems = document.querySelectorAll('.gallery-hidden');
+
+  toggleBtn.addEventListener('click', () => {
+    ocultasItems.forEach(item => {
+      item.classList.toggle('gallery-hidden');
+      item.classList.toggle('gallery-visible');
+    });
+    const showing = ocultasItems.length === document.querySelectorAll('.gallery-visible').length;
+    toggleBtn.textContent = showing ? 'Ver menos fotos' : `Ver más fotos (${ocultasItems.length})`;
+    if (showing) lightbox.reload();
+  });
 </script>
 
 <style is:global>
+  .gallery-hidden {
+    display: none !important;
+  }
+  .gallery-item.gallery-visible {
+    animation: galeriaFadeIn 0.4s ease;
+  }
+  @keyframes galeriaFadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   .gslide-description {
     background: rgba(0,0,0,0.7) !important;
     padding: 20px 24px !important;

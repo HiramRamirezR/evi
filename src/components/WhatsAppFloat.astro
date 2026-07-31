@@ -14,9 +14,14 @@
 </div>
 
 <script>
+  function track(eventName, params) {
+    if (typeof gtag === 'function') gtag('event', eventName, params);
+  }
+
   function openModal() {
     const overlay = document.getElementById('modalOverlay');
     if (overlay) overlay.classList.add('open');
+    track('modal_abierto');
   }
 
   document.addEventListener('click', (e) => {

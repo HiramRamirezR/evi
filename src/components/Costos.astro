@@ -1,21 +1,143 @@
 ---
 import costos from '../data/costos.json';
+import config from '../data/config.json';
 ---
 
 <div id="costos" class="compatibility">
   <div class="container">
     <h3>Costos - Ciclo Escolar {costos.ciclo}</h3>
-    <div style="text-align: center; padding: 2em 0;">
+
+    <div id="costosTeaser" style="text-align: center; padding: 2em 0;">
       <p style="font-size: 1.2em; color: #555; margin-bottom: 1em;">
         Mensualidades desde <strong>$3,000</strong>
       </p>
       <p style="color: #888; margin-bottom: 1.5em;">
-        Contáctanos para recibir información detallada y personalizada según el nivel de tu hijo.
+        Conoce el desglose de costos del nivel que te interesa.
       </p>
-      <button class="open-modal" style="background: #00A2C1; color: #fff; border: none; padding: 14px 36px; border-radius: 30px; font-size: 1.05em; font-weight: 600; cursor: pointer; transition: background 0.3s;"
+      <button id="costosCta" class="costos-cta" style="background: #00A2C1; color: #fff; border: none; padding: 14px 36px; border-radius: 30px; font-size: 1.05em; font-weight: 600; cursor: pointer; transition: background 0.3s;"
         onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">
-        Solicitar información
+        🔍 Consultar costos
+      </button>
+    </div>
+
+    <div id="costosNiveles" class="costos-niveles" style="display: none; text-align: center; padding: 0 0 2em;">
+      <p style="color: #555; font-weight: 600; margin-bottom: 1em;">¿Para qué nivel quieres ver los costos?</p>
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        {costos.niveles.map((nivel, i) => (
+          <button class="costos-pill" data-nivel={i} style="background: #fff; color: #00A2C1; border: 2px solid #00A2C1; padding: 12px 24px; border-radius: 30px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+            {nivel.nombre} ({nivel.grado})
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div id="costosTabla" class="costos-tabla" style="display: none; max-width: 520px; margin: 0 auto 2em;">
+      <div style="background: #fff; border-radius: 16px; border: 1px solid #e0e0e0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+        <div style="background: #00A2C1; color: #fff; padding: 16px 20px; text-align: center;">
+          <h4 id="tablaTitulo" style="margin: 0; font-size: 1.15em; font-family: 'nexa_boldregular';">Casa de Niños (Kinder)</h4>
+          <span style="font-size: 0.85em; opacity: 0.9;">Ciclo Escolar {costos.ciclo}</span>
+        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tbody id="tablaBody"></tbody>
+        </table>
+      </div>
+      <button class="open-modal" style="display: block; margin: 1.5em auto 0; background: #00A2C1; color: #fff; border: none; padding: 14px 36px; border-radius: 30px; font-size: 1em; font-weight: 600; cursor: pointer; transition: background 0.3s;"
+        onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">
+        Quiero más información
       </button>
     </div>
   </div>
 </div>
+
+<style is:global>
+  .costos-niveles.visible {
+    animation: costosFadeIn 0.4s ease;
+  }
+  .costos-tabla.visible {
+    animation: costosFadeIn 0.4s ease;
+  }
+  @keyframes costosFadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .costos-pill:hover {
+    background: #00A2C1 !important;
+    color: #fff !important;
+  }
+  .costos-pill.active {
+    background: #00A2C1 !important;
+    color: #fff !important;
+  }
+  .costos-tabla table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.95em;
+  }
+  .costos-tabla table tr:last-child td {
+    border-bottom: none;
+  }
+  .costos-tabla .td-label {
+    color: #777;
+  }
+  .costos-tabla .td-value {
+    color: #333;
+    font-weight: 600;
+    text-align: right;
+  }
+</style>
+
+<script define:vars={{ costos }}>
+  const niveles = costos.niveles;
+
+  function fmt(n) {
+    return '$ ' + n.toLocaleString('es-MX') + '.00';
+  }
+
+  const cta = document.getElementById('costosCta');
+  const nivelesDiv = document.getElementById('costosNiveles');
+  const tablaDiv = document.getElementById('costosTabla');
+  const tablaTitulo = document.getElementById('tablaTitulo');
+  const tablaBody = document.getElementById('tablaBody');
+
+  const campos = [
+    { key: 'inscripcion', label: 'Inscripción' },
+    { key: 'material', label: 'Material' },
+    { key: 'fauna', label: 'Fauna' },
+    { key: 'ingles', label: 'Inglés' },
+  ];
+
+  function track(eventName, params) {
+    if (typeof gtag === 'function') gtag('event', eventName, params);
+  }
+
+  cta.addEventListener('click', () => {
+    nivelesDiv.style.display = 'block';
+    nivelesDiv.classList.add('visible');
+    cta.style.display = 'none';
+    track('costos_click');
+  });
+
+  document.querySelectorAll('.costos-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.costos-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+
+      const nivel = niveles[parseInt(pill.dataset.nivel)];
+      tablaTitulo.textContent = `${nivel.nombre} (${nivel.grado})`;
+
+      tablaBody.innerHTML = '';
+      campos.forEach(campo => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="td-label">${campo.label}</td><td class="td-value">${fmt(nivel.costos[campo.key])}</td>`;
+        tablaBody.appendChild(tr);
+      });
+      const trM = document.createElement('tr');
+      trM.innerHTML = `<td class="td-label">${nivel.costos.mensualidades} Mensualidades</td><td class="td-value">${fmt(nivel.costos.pagoMensual)} c/u</td>`;
+      tablaBody.appendChild(trM);
+
+      tablaDiv.style.display = 'block';
+      tablaDiv.classList.add('visible');
+      track('nivel_seleccionado', { nivel: nivel.nombre });
+    });
+  });
+</script>

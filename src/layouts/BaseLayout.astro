@@ -68,6 +68,18 @@ const shareUrl = ogUrl || config.site.url;
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+    {config.analytics?.ga4 && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${config.analytics.ga4}`}></script>
+        <script is:inline define:vars={{ ga4: config.analytics.ga4 }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', ga4);
+        </script>
+      </>
+    )}
   </head>
   <body>
     <slot />

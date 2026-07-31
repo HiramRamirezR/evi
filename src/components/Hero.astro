@@ -1,4 +1,6 @@
 ---
+import config from '../data/config.json';
+
 const slides = [
   { src: '/images/slide01.webp', alt: 'Educación para la Vida - Escuela Montessori', text: 'Educación para la Vida', tag: 'h1' },
   { src: '/images/slide02.webp', alt: 'Instalaciones - Escuela Montessori', text: 'Escuela Montessori', tag: 'h2' },
@@ -13,6 +15,7 @@ const slides = [
         <img src={slide.src} alt={slide.alt} loading={i === 0 ? 'eager' : 'lazy'} />
         <div class="hero-caption">
           {slide.tag === 'h1' ? <h1>{slide.text}</h1> : <h2>{slide.text}</h2>}
+          <div class="hero-sep">Clave SEP: {config.claveSep}</div>
           <button class="hero-cta open-modal">Quiero más información</button>
         </div>
       </div>

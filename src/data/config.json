@@ -21,5 +21,8 @@
   "redes": {
     "ogImage": "/images/og-image.jpg"
   },
-  "claveSep": "21PPR0771B"
+  "claveSep": "21PPR0771B",
+  "analytics": {
+    "ga4": "G-19WS95V51S"
+  }
 }

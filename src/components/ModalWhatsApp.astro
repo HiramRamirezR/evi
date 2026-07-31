@@ -1,6 +1,5 @@
 ---
 import config from '../data/config.json';
-import costos from '../data/costos.json';
 ---
 
 <div class="modal-overlay" id="modalOverlay">
@@ -12,10 +11,6 @@ import costos from '../data/costos.json';
       <label>
         <input type="checkbox" value="Agendar una visita" class="modal-checkbox" data-type="action" />
         Quiero agendar una visita
-      </label>
-      <label>
-        <input type="checkbox" value="Información sobre costos" class="modal-checkbox" data-type="action" />
-        Quiero información sobre costos
       </label>
       <label>
         <input type="checkbox" value="Un día de prueba" class="modal-checkbox" data-type="action" />
@@ -47,7 +42,7 @@ import costos from '../data/costos.json';
         </label>
       </div>
     </div>
-    <button class="modal-submit" id="modalSubmit" data-whatsapp={config.contacto.whatsapp} data-costos={JSON.stringify(costos.niveles)} disabled>Enviar por WhatsApp</button>
+    <button class="modal-submit" id="modalSubmit" data-whatsapp={config.contacto.whatsapp} disabled>Enviar por WhatsApp</button>
   </div>
 </div>
 
@@ -59,11 +54,6 @@ import costos from '../data/costos.json';
   const levelCbs = document.querySelectorAll('.modal-checkbox[data-type="level"]');
   const allCbs = document.querySelectorAll('.modal-checkbox');
   const levelsWrapper = document.getElementById('modalLevels');
-  const niveles = JSON.parse(submitBtn.dataset.costos);
-
-  function fmt(n) {
-    return '$ ' + n.toLocaleString('es-MX') + '.00';
-  }
 
   function updateLevelsVisibility() {
     const anyAction = Array.from(actionCbs).some(cb => cb.checked);
@@ -81,14 +71,12 @@ import costos from '../data/costos.json';
     const checked = Array.from(allCbs).filter(cb => cb.checked);
 
     const wantsVisit = checked.some(cb => cb.value === 'Agendar una visita');
-    const wantsCostos = checked.some(cb => cb.value === 'Información sobre costos');
     const wantsPrueba = checked.some(cb => cb.value === 'Un día de prueba');
     const wantsEval = checked.some(cb => cb.value === 'Evaluación neuropsicológica');
     const levels = checked.filter(cb => cb.dataset.type === 'level');
 
     const actions = [];
     if (wantsVisit) actions.push('Agendar una visita');
-    if (wantsCostos) actions.push('Información sobre costos');
     if (wantsPrueba) actions.push('Un día de prueba para mi hijo');
     if (wantsEval) actions.push('Evaluación neuropsicológica');
     if (actions.length) {
@@ -112,32 +100,30 @@ import costos from '../data/costos.json';
       lines.push('Evaluación: la directora (neuropsicóloga) evaluará a mi hijo.');
     }
 
-    if (wantsCostos && levels.length) {
-      lines.push('Costos:');
-      levels.forEach(cb => {
-        const nivel = niveles[parseInt(cb.dataset.nivel)];
-        lines.push(`  ${nivel.nombre} (${nivel.grado})`);
-        lines.push(`    Inscripción: ${fmt(nivel.costos.inscripcion)}`);
-        lines.push(`    Material: ${fmt(nivel.costos.material)}`);
-        lines.push(`    Fauna: ${fmt(nivel.costos.fauna)}`);
-        lines.push(`    Inglés: ${fmt(nivel.costos.ingles)}`);
-        lines.push(`    ${nivel.costos.mensualidades} Mensualidades: ${fmt(nivel.costos.pagoMensual)}`);
-      });
-    }
-
     lines.push('Favor de contactarme para agendar.');
 
     return encodeURIComponent(lines.join('\n'));
+  }
+
+  function track(eventName, params) {
+    if (typeof gtag === 'function') gtag('event', eventName, params);
   }
 
   allCbs.forEach(cb => {
     cb.addEventListener('change', () => {
       updateLevelsVisibility();
       updateSubmit();
+      const checked = Array.from(allCbs).filter(c => c.checked).map(c => c.value);
+      track('opciones_seleccionadas', { opciones: checked.join(', ') });
     });
   });
 
   submitBtn.addEventListener('click', () => {
+    const checked = Array.from(allCbs).filter(c => c.checked);
+    const acciones = checked.filter(c => c.dataset.type === 'action').map(c => c.value);
+    const nivelesSel = checked.filter(c => c.dataset.type === 'level').map(c => c.value);
+    track('whatsapp_enviado', { acciones: acciones.join(', '), niveles: nivelesSel.join(', ') });
+
     const msg = buildMessage();
     const wa = submitBtn.dataset.whatsapp;
     window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
