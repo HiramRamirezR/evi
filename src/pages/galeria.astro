@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Galeria from '../components/Galeria.astro';
+import WhatsAppFloat from '../components/WhatsAppFloat.astro';
+---
+
+<BaseLayout
+  title="Galería | Escuela Montessori en Puebla"
+  description="Fotos de la vida escolar en Educación para la Vida: actividades, eventos y el día a día del método Montessori en Puebla."
+>
+  <div style="background: rgba(38,38,38,0.95); position: fixed; top: 0; left: 0; right: 0; z-index: 9999; padding: 10px 20px; display: flex; align-items: center; gap: 15px;">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+      <img src="/images/logo.webp" width="35" alt="Educación para la Vida" />
+      <span style="color: #fff; font-family: 'nexa_boldregular'; font-size: 1.1em;">Educación para la Vida</span>
+    </a>
+    <a href="/" style="color: #fff; text-decoration: none; margin-left: auto; font-size: 0.9em; font-weight: 700; background: #00A2C1; padding: 6px 18px; border-radius: 20px; transition: background 0.3s;" onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">&larr; Volver al inicio</a>
+  </div>
+
+  <div style="padding-top: 90px;">
+    <Galeria />
+  </div>
+
+  <WhatsAppFloat />
+</BaseLayout>

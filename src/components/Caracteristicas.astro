@@ -1,4 +1,11 @@
 ---
+import config from '../data/config.json';
+
+const msg = encodeURIComponent(
+  '¡Hola! Me interesa conocer más sobre la Escuela Montessori "Educación para la Vida". Vengo de su página web y me gustaría recibir información sobre las inscripciones 2026-2027.'
+);
+const waLink = `https://wa.me/${config.contacto.whatsapp}?text=${msg}`;
+
 const caracteristicas = [
   { img: '/images/brush01.png', texto: 'Los niños trabajan a su propio ritmo. El grupo no define ni limita el avance de cada niño.' },
   { img: '/images/brush02.png', texto: 'Los niños aprenden en un ambiente de tolerancia donde se promueven el diálogo y la unidad.' },
@@ -22,7 +29,7 @@ const caracteristicas = [
         </div>
       </div>
       <div style="text-align: center; margin-top: 2em;">
-        <button class="caract-cta open-modal">Conoce más sobre nosotros</button>
+        <a href={waLink} data-wa target="_blank" rel="noopener noreferrer" class="caract-cta">Conoce más sobre nosotros</a>
       </div>
     </div>
     <div class="feature-right">

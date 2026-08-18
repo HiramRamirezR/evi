@@ -3,7 +3,6 @@ import '../styles/global.css';
 import '../styles/nav.css';
 import '../styles/hero.css';
 import '../styles/sections.css';
-import '../styles/modal.css';
 import 'glightbox/dist/css/glightbox.min.css';
 
 import config from '../data/config.json';
@@ -20,6 +19,56 @@ const siteTitle = title || config.site.title;
 const siteDesc = description || config.site.description;
 const shareImage = ogImage || config.redes.ogImage;
 const shareUrl = ogUrl || config.site.url;
+const absoluteImage = `${config.site.url}${shareImage}`;
+
+const schoolJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${config.site.url}/#website`,
+      url: config.site.url,
+      name: 'Educación para la Vida',
+      inLanguage: 'es-MX',
+      publisher: { '@id': `${config.site.url}/#school` },
+    },
+    {
+      '@type': 'School',
+      '@id': `${config.site.url}/#school`,
+      name: 'Educación para la Vida',
+      description: config.site.description,
+      url: config.site.url,
+      logo: `${config.site.url}/images/logo.webp`,
+      image: absoluteImage,
+      telephone: `+52${config.contacto.whatsapp}`,
+      email: config.contacto.email,
+      foundingDate: '1993',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Ignacio Allende 55, Col. Insurgentes',
+        addressLocality: 'Puebla',
+        addressRegion: 'Puebla',
+        postalCode: '72400',
+        addressCountry: 'MX',
+      },
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: config.site.geo.latitude,
+        longitude: config.site.geo.longitude,
+      },
+      openingHoursSpecification: [
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          opens: '08:00',
+          closes: '14:00',
+        },
+      ],
+      sameAs: config.redes.facebook ? [config.redes.facebook] : [],
+      teaches: ['Kinder', 'Primaria', 'Secundaria'],
+    },
+  ],
+};
 ---
 
 <!DOCTYPE html>
@@ -29,41 +78,29 @@ const shareUrl = ogUrl || config.site.url;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{siteTitle}</title>
     <meta name="description" content={siteDesc}>
-    <meta name="keywords" content="Escuela Montessori, Educación para la Vida, Kínder, Primaria, Secundaria, Educación activa, Desarrollo infantil, Montessori México">
+    <meta name="keywords" content="Escuela Montessori, Educación para la Vida, Kínder, Primaria, Secundaria, Educación activa, Desarrollo infantil, Montessori Puebla, Escuela Montessori Puebla">
     <meta name="author" content={config.site.author}>
+    <meta name="theme-color" content="#00A2C1">
+
+    <link rel="canonical" href={shareUrl}>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content={shareUrl}>
     <meta property="og:title" content={siteTitle}>
     <meta property="og:description" content={siteDesc}>
-    <meta property="og:image" content={`${config.site.url}${shareImage}`}>
+    <meta property="og:image" content={absoluteImage}>
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:locale" content="es_MX">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content={siteTitle}>
     <meta name="twitter:description" content={siteDesc}>
-    <meta name="twitter:image" content={`${config.site.url}${shareImage}`}>
+    <meta name="twitter:image" content={absoluteImage}>
 
-    <script type="application/ld+json" set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "EducationalOrganization",
-      "name": "Educación para la Vida",
-      "description": config.site.description,
-      "url": config.site.url,
-      "telephone": config.contacto.telefono,
-      "email": config.contacto.email,
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Ignacio Allende 55",
-        "addressLocality": "Puebla",
-        "addressRegion": "Puebla",
-        "addressCountry": "MX"
-      },
-      "foundingDate": "1993",
-      "teaches": ["Kinder", "Primaria", "Secundaria"]
-    })} />
-
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <script type="application/ld+json" set:html={JSON.stringify(schoolJsonLd)} />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

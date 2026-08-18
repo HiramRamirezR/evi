@@ -1,7 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ModalWhatsApp from '../components/ModalWhatsApp.astro';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
+import config from '../data/config.json';
+
+const msg = encodeURIComponent(
+  '¡Hola! Me interesa conocer más sobre la Escuela Montessori "Educación para la Vida". Vengo de su página web y me gustaría recibir información sobre las inscripciones 2026-2027.'
+);
+const waLink = `https://wa.me/${config.contacto.whatsapp}?text=${msg}`;
 
 const ambientes = [
   {
@@ -43,7 +48,7 @@ const comunes = ['Fauna y vida saludable', 'Música', 'Educación física', 'Ing
 >
   <div style="background: rgba(38,38,38,0.95); position: fixed; top: 0; left: 0; right: 0; z-index: 9999; padding: 10px 20px; display: flex; align-items: center; gap: 15px;">
     <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-      <img src="/images/logo.png" width="35" alt="Educación para la Vida" />
+      <img src="/images/logo.webp" width="35" alt="Educación para la Vida" />
       <span style="color: #fff; font-family: 'nexa_boldregular'; font-size: 1.1em;">Educación para la Vida</span>
     </a>
     <a href="/" style="color: #fff; text-decoration: none; margin-left: auto; font-size: 0.9em; font-weight: 700; background: #00A2C1; padding: 6px 18px; border-radius: 20px; transition: background 0.3s;" onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">&larr; Volver al inicio</a>
@@ -82,11 +87,10 @@ const comunes = ['Fauna y vida saludable', 'Música', 'Educación física', 'Ing
 
     <div style="text-align: center;">
       <p style="color: #777; margin-bottom: 1em;">¿Te gustaría que tu hijo viva la experiencia por un día sin costo?</p>
-      <button class="open-modal" style="background: #00A2C1; color: #fff; border: none; padding: 16px 40px; border-radius: 30px; font-size: 1.05em; font-weight: 700; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">Quiero más información</button>
+      <a href={waLink} data-wa target="_blank" rel="noopener noreferrer" style="background: #25D366; color: #fff; border: none; padding: 16px 40px; border-radius: 30px; font-size: 1.05em; font-weight: 700; cursor: pointer; display: inline-block; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#1da851'" onmouseout="this.style.background='#25D366'">Escríbenos por WhatsApp</a>
     </div>
   </div>
 
-  <ModalWhatsApp />
   <WhatsAppFloat />
 </BaseLayout>
 

@@ -9,7 +9,7 @@ import testimonios from '../data/testimonios.json';
       {testimonios.map((t) => (
         <div class="testimonio-card">
           <p>"{t.texto}"</p>
-          <div class="testimonio-autor">— {t.autor}</div>
+          <div class="testimonio-autor">— {t.autor}{t.rol ? `, ${t.rol}` : ''}</div>
         </div>
       ))}
     </div>

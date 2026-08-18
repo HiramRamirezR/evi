@@ -15,12 +15,44 @@ const { post } = Astro.props;
 const { Content } = await post.render();
 const postUrl = `${config.site.url}/blog/${post.slug}/`;
 const ogImage = post.data.image || config.redes.ogImage;
+const absoluteImage = `${config.site.url}${ogImage}`;
+
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: post.data.title,
+      description: post.data.description,
+      image: absoluteImage,
+      author: { '@type': 'Person', name: post.data.author },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Educación para la Vida',
+        logo: { '@type': 'ImageObject', url: `${config.site.url}/images/logo.webp` },
+      },
+      datePublished: post.data.pubDate,
+      dateModified: post.data.pubDate,
+      mainEntityOfPage: postUrl,
+      inLanguage: 'es-MX',
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${config.site.url}/` },
+        { '@type': 'ListItem', position: 2, name: 'Blog', item: `${config.site.url}/blog/` },
+        { '@type': 'ListItem', position: 3, name: post.data.title, item: postUrl },
+      ],
+    },
+  ],
+};
 ---
 
 <BaseLayout title={`${post.data.title} | Blog Montessori`} description={post.data.description} ogImage={ogImage} ogUrl={postUrl}>
+  <script type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
   <div style="background: rgba(38,38,38,0.95); position: fixed; top: 0; left: 0; right: 0; z-index: 9999; padding: 10px 20px; display: flex; align-items: center; gap: 15px;">
     <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-      <img src="/images/logo.png" width="35" alt="Educación para la Vida" />
+      <img src="/images/logo.webp" width="35" alt="Educación para la Vida" />
       <span style="color: #fff; font-family: 'nexa_boldregular'; font-size: 1.1em;">Educación para la Vida</span>
     </a>
     <a href="/blog" style="color: #fff; text-decoration: none; margin-left: auto; font-size: 0.9em; font-weight: 700; background: #00A2C1; padding: 6px 18px; border-radius: 20px; transition: background 0.3s;" onmouseover="this.style.background='#0089a3'" onmouseout="this.style.background='#00A2C1'">&larr; Ver todos</a>

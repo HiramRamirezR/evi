@@ -1,0 +1,212 @@
+---
+const videos = [
+  { id: 'FteZuYzC_u4', titulo: 'Casa de Niños (Kinder)' },
+  { id: 'B6pBNgX6YjI', titulo: 'Taller I (1° a 3° de Primaria)' },
+  { id: 'BkF7zbJvehI', titulo: 'Taller II (4° a 6° de Primaria)' },
+  { id: 'sWkmeCdFeiI', titulo: 'Campamento Taller II y III' },
+];
+---
+
+<section class="videos" id="videos">
+  <div class="container">
+    <h3>Conócenos en video</h3>
+    <div class="videos-viewport">
+      <div class="videos-track" id="videosTrack">
+        {videos.map((v, i) => (
+          <div class="video-card">
+            <button class="video-thumb" data-video={v.id} data-index={i} aria-label={`Reproducir video: ${v.titulo}`}>
+              <img src={`https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`} alt={v.titulo} loading="lazy" />
+              <span class="video-play"></span>
+            </button>
+            <p class="video-title">{v.titulo}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="videos-dots" id="videosDots">
+      {videos.map((_, i) => (
+        <button class="video-dot" data-index={i} aria-label={`Ver video ${i + 1}`}></button>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  function track(eventName, params) {
+    if (typeof gtag === 'function') gtag('event', eventName, params);
+  }
+
+  const trackEl = document.getElementById('videosTrack');
+  const cards = document.querySelectorAll('.video-card');
+  const dots = document.querySelectorAll('.video-dot');
+  let current = 0;
+  let interval;
+  let playing = false;
+
+  const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+
+  function goTo(index, apply) {
+    current = index;
+    if (apply && trackEl) trackEl.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  function startAuto() {
+    if (!isMobile() || playing || cards.length < 2) return;
+    clearInterval(interval);
+    interval = setInterval(() => {
+      goTo((current + 1) % cards.length, true);
+    }, 4500);
+  }
+
+  dots.forEach((dot) => {
+    dot.addEventListener('click', () => {
+      goTo(parseInt(dot.dataset.index), isMobile());
+      startAuto();
+    });
+  });
+
+  document.querySelectorAll('.video-thumb').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.video;
+      playing = true;
+      clearInterval(interval);
+      track('video_reproducido', { video: id });
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+      iframe.title = 'Video';
+      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.style.width = '100%';
+      iframe.style.aspectRatio = '16 / 9';
+      iframe.style.border = 'none';
+      iframe.style.borderRadius = '12px';
+      iframe.style.display = 'block';
+      btn.replaceWith(iframe);
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    if (isMobile()) {
+      goTo(current, true);
+      startAuto();
+    } else {
+      clearInterval(interval);
+      if (trackEl) trackEl.style.transform = '';
+      dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+  });
+
+  goTo(0, isMobile());
+  startAuto();
+</script>
+
+<style>
+  .videos {
+    padding: 4em 0;
+    background: #fff;
+  }
+  .videos h3 {
+    text-align: center;
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1.5em;
+  }
+  .videos-viewport {
+    overflow: hidden;
+  }
+  .video-thumb {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 16 / 9;
+  }
+  .video-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  .video-thumb:hover img {
+    transform: scale(1.05);
+  }
+  .video-play {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 60px;
+    height: 60px;
+    background: rgba(37, 211, 102, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s;
+  }
+  .video-play::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 18px solid #fff;
+    border-top: 11px solid transparent;
+    border-bottom: 11px solid transparent;
+    margin-left: 4px;
+  }
+  .video-thumb:hover .video-play {
+    transform: scale(1.1);
+  }
+  .video-title {
+    text-align: center;
+    font-weight: 600;
+    color: #555;
+    margin-top: 10px;
+  }
+  .videos-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .video-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: #ccc;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .video-dot.active {
+    background: #00A2C1;
+  }
+
+  @media (max-width: 767px) {
+    .videos-track {
+      display: flex;
+      transition: transform 0.5s ease;
+    }
+    .video-card {
+      flex: 0 0 100%;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .videos-track {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+    .videos-dots {
+      display: none;
+    }
+  }
+</style>
