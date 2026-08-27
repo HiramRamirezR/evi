@@ -1,0 +1,761 @@
+---
+---
+<div class="menu-calendar" style="display:none">
+  <button class="back-btn" id="backToPanel">← Volver a Panel</button>
+  <div class="menu-calendar-header">
+    <h3>Calendario de Menú</h3>
+  </div>
+
+  <div class="groups-container">
+    <div class="group-card">
+      <h4>Chicos</h4>
+      <div class="child-list" id="children1"></div>
+      <div class="add-child-form">
+        <input type="text" id="newChild1" placeholder="Nombre del niño">
+        <button class="btn-add" data-group="1">+ Agregar</button>
+      </div>
+    </div>
+    <div class="group-card">
+      <h4>Grandes</h4>
+      <div class="child-list" id="children2"></div>
+      <div class="add-child-form">
+        <input type="text" id="newChild2" placeholder="Nombre del niño">
+        <button class="btn-add" data-group="2">+ Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="month-selector">
+    <h4>Seleccionar mes</h4>
+    <div class="year-nav">
+      <button class="btn-year" id="prevYear">◀</button>
+      <span id="yearLabel">2026</span>
+      <button class="btn-year" id="nextYear">▶</button>
+    </div>
+    <div class="months-grid" id="monthsGrid"></div>
+  </div>
+
+  <div class="menu-count-section">
+    <h4>Número de menús</h4>
+    <p class="hint">Cuántos menús diferentes hay. Se asignan en secuencia: 1, 2, 3...</p>
+    <div class="menu-count-input">
+      <input type="number" id="menuCount" min="1" max="30" value="5">
+    </div>
+  </div>
+
+  <div class="disabled-days-section">
+    <h4>Días inhábiles</h4>
+    <p class="hint">Haz clic en un día para marcarlo como inhabil.</p>
+    <div class="disabled-days-grid" id="disabledDaysGrid"></div>
+  </div>
+
+  <div class="image-upload-area">
+    <h4>Imagen de fondo (opcional)</h4>
+    <div class="upload-zone" id="uploadZone">
+      <p>Haz clic para seleccionar una imagen</p>
+      <input type="file" id="bgImageInput" accept="image/*" style="display:none">
+    </div>
+    <img id="bgPreview" class="preview-img" style="display:none">
+    <button class="btn-remove-img" id="removeBgImage" style="display:none">Eliminar imagen</button>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-action btn-generate" id="generateBtn">📅 Generar Calendario</button>
+    <button class="btn-action btn-pdf" id="exportPdfBtn">📄 Descargar PDF</button>
+    <button class="btn-action btn-image" id="exportJpgBtn">🖼️ Descargar Imagen</button>
+  </div>
+
+  <div class="calendar-preview" id="calendarPreview" style="display:none">
+    <img id="bgImageDisplay" class="bg-image" style="display:none">
+    <div class="calendar-content" id="calendarContent"></div>
+  </div>
+</div>
+
+<script is:inline>
+(function() {
+  const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const DAY_NAMES = ['Lun','Mar','Mié','Jue','Vie'];
+
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth();
+  let bgImageData = null;
+
+  let data = {
+    groups: {
+      1: { name: 'Chicos', children: [] },
+      2: { name: 'Grandes', children: [] }
+    },
+    calendar: {},
+    menuCount: 5
+  };
+
+  function getFirebaseConfig() {
+    return window.FIREBASE_CONFIG || null;
+  }
+
+  let db = null;
+  let useFirebase = false;
+
+  async function initFirebase() {
+    const config = getFirebaseConfig();
+    if (!config) return;
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+      const { getDatabase } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+      const app = initializeApp(config);
+      db = getDatabase(app);
+      useFirebase = true;
+      listenFirebase();
+    } catch(e) {
+      console.warn('Firebase no disponible, usando localStorage', e);
+    }
+  }
+
+  async function listenFirebase() {
+    if (!useFirebase || !db) return;
+    const { ref: dbRef, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    const dataRef = dbRef(db, 'evi-menu');
+    onValue(dataRef, (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        data.groups = val.groups || data.groups;
+        data.calendar = val.calendar || {};
+        renderAll();
+      }
+    });
+  }
+
+  async function saveData() {
+    if (useFirebase && db) {
+      try {
+        const { ref: dbRef, set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+        await set(dbRef(db, 'evi-menu'), data);
+      } catch(e) {
+        console.warn('Error guardando en Firebase', e);
+        saveLocal();
+      }
+    } else {
+      saveLocal();
+    }
+  }
+
+  function saveLocal() {
+    localStorage.setItem('evi-menu-data', JSON.stringify(data));
+  }
+
+  function loadLocal() {
+    const saved = localStorage.getItem('evi-menu-data');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      data.groups = parsed.groups || data.groups;
+      data.calendar = parsed.calendar || {};
+      data.menuCount = parsed.menuCount || 5;
+    }
+  }
+
+  function renderChildList(groupId) {
+    const container = document.getElementById('children' + groupId);
+    const children = data.groups[groupId].children;
+    container.innerHTML = '';
+    children.forEach((name, i) => {
+      const item = document.createElement('div');
+      item.className = 'child-item';
+      item.draggable = true;
+      item.dataset.index = i;
+      item.innerHTML = `
+        <span class="child-order">${i + 1}.</span>
+        <span class="child-name">${name}</span>
+        <button class="btn-move" data-dir="up" title="Subir">▲</button>
+        <button class="btn-move" data-dir="down" title="Bajar">▼</button>
+        <button class="btn-remove" title="Eliminar">✕</button>
+      `;
+      container.appendChild(item);
+    });
+
+    container.querySelectorAll('.btn-move').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const idx = parseInt(this.closest('.child-item').dataset.index);
+        const dir = this.dataset.dir;
+        moveChild(groupId, idx, dir);
+      });
+    });
+
+    container.querySelectorAll('.btn-remove').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const idx = parseInt(this.closest('.child-item').dataset.index);
+        removeChild(groupId, idx);
+      });
+    });
+
+    setupDragDrop(container, groupId);
+  }
+
+  function setupDragDrop(container, groupId) {
+    let dragIdx = null;
+    container.addEventListener('dragstart', (e) => {
+      dragIdx = parseInt(e.target.dataset.index);
+    });
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    container.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const dropIdx = parseInt(e.target.closest('.child-item')?.dataset.index);
+      if (dragIdx !== null && dropIdx !== undefined && dragIdx !== dropIdx) {
+        const arr = data.groups[groupId].children;
+        const [moved] = arr.splice(dragIdx, 1);
+        arr.splice(dropIdx, 0, moved);
+        saveData();
+        renderChildList(groupId);
+      }
+      dragIdx = null;
+    });
+  }
+
+  function addChild(groupId) {
+    const input = document.getElementById('newChild' + groupId);
+    const name = input.value.trim();
+    if (!name) return;
+    data.groups[groupId].children.push(name);
+    data.groups[groupId].children.sort((a, b) => a.localeCompare(b, 'es'));
+    input.value = '';
+    saveData();
+    renderChildList(groupId);
+  }
+
+  function removeChild(groupId, index) {
+    data.groups[groupId].children.splice(index, 1);
+    saveData();
+    renderChildList(groupId);
+  }
+
+  function moveChild(groupId, index, direction) {
+    const arr = data.groups[groupId].children;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= arr.length) return;
+    [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
+    saveData();
+    renderChildList(groupId);
+  }
+
+  function renderMonths() {
+    const grid = document.getElementById('monthsGrid');
+    grid.innerHTML = '';
+    document.getElementById('yearLabel').textContent = currentYear;
+    MONTH_NAMES.forEach((name, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'month-btn' + (i === currentMonth && currentYear === new Date().getFullYear() ? ' active' : '');
+      btn.textContent = name;
+      btn.addEventListener('click', () => selectMonth(i));
+      grid.appendChild(btn);
+    });
+  }
+
+  function selectMonth(month) {
+    currentMonth = month;
+    document.querySelectorAll('.month-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === month);
+    });
+    renderDisabledDays();
+  }
+
+  function getDaysInMonth(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  function getFirstDayOfMonth(year, month) {
+    let day = new Date(year, month, 1).getDay();
+    if (day === 0 || day === 6) return 4;
+    return day - 1;
+  }
+
+  function getCalendarKey() {
+    return currentYear + '-' + (currentMonth + 1);
+  }
+
+  function getDisabledDays() {
+    const key = getCalendarKey();
+    return data.calendar[key]?.disabledDays || [];
+  }
+
+  function renderDisabledDays() {
+    const grid = document.getElementById('disabledDaysGrid');
+    grid.innerHTML = '';
+    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+    const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+    const disabledDays = getDisabledDays();
+
+    for (let i = 0; i < firstDay; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'disabled-day-cell empty';
+      grid.appendChild(cell);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayOfWeek = new Date(currentYear, currentMonth, d).getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+      const cell = document.createElement('div');
+      cell.className = 'disabled-day-cell';
+      const isDisabled = disabledDays.includes(d);
+
+      if (isDisabled) {
+        cell.classList.add('disabled');
+      }
+
+      cell.textContent = d;
+      cell.addEventListener('click', () => toggleDisabledDay(d));
+      grid.appendChild(cell);
+    }
+  }
+
+  function toggleDisabledDay(day) {
+    const key = getCalendarKey();
+    if (!data.calendar[key]) {
+      data.calendar[key] = { disabledDays: [], lastChildIndex: {} };
+    }
+    const idx = data.calendar[key].disabledDays.indexOf(day);
+    if (idx > -1) {
+      data.calendar[key].disabledDays.splice(idx, 1);
+    } else {
+      data.calendar[key].disabledDays.push(day);
+    }
+    saveData();
+    renderDisabledDays();
+  }
+
+  let lastCal = null;
+
+  function generateCombinedCalendar() {
+    const key = getCalendarKey();
+    if (!data.calendar[key]) {
+      data.calendar[key] = { disabledDays: [], lastChildIndex: {} };
+    }
+    const calData = data.calendar[key];
+    const disabledDays = calData.disabledDays || [];
+    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+    const menuCount = parseInt(document.getElementById('menuCount').value) || 5;
+    data.menuCount = menuCount;
+
+    function getAssignment(groupId) {
+      const children = data.groups[groupId].children;
+      if (children.length === 0) return null;
+      let startIdx = 0;
+      if (currentMonth > 0) {
+        const prev = data.calendar[currentYear + '-' + currentMonth];
+        if (prev && prev.lastChildIndex && prev.lastChildIndex[groupId] !== undefined) {
+          startIdx = (prev.lastChildIndex[groupId] + 1) % children.length;
+        }
+      }
+      const assignment = {};
+      let idx = startIdx;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dow = new Date(currentYear, currentMonth, d).getDay();
+        if (dow === 0 || dow === 6) continue;
+        if (disabledDays.includes(d)) continue;
+        assignment[d] = children[idx % children.length];
+        idx++;
+      }
+      calData.lastChildIndex = calData.lastChildIndex || {};
+      calData.lastChildIndex[groupId] = (idx - 1) % children.length;
+      return assignment;
+    }
+
+    const a1 = getAssignment(1);
+    const a2 = getAssignment(2);
+
+    let menuNumber = 1;
+    const menuNumbers = {};
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = new Date(currentYear, currentMonth, d).getDay();
+      if (dow === 0 || dow === 6) continue;
+      if (disabledDays.includes(d)) continue;
+      menuNumbers[d] = menuNumber;
+      menuNumber = (menuNumber % menuCount) + 1;
+    }
+
+    saveData();
+
+    return {
+      assignment1: a1,
+      assignment2: a2,
+      menuNumbers: menuNumbers,
+      menuCount: menuCount,
+      firstDay: getFirstDayOfMonth(currentYear, currentMonth),
+      daysInMonth,
+      disabledDays
+    };
+  }
+
+  function generateAll() {
+    const cal = generateCombinedCalendar();
+    lastCal = cal;
+
+    const container = document.getElementById('calendarContent');
+    const preview = document.getElementById('calendarPreview');
+    preview.style.display = 'block';
+
+    let html = '';
+    html += '<h4>Calendario de Menú - ' + MONTH_NAMES[currentMonth] + ' ' + currentYear + '</h4>';
+
+    if (cal.assignment1 || cal.assignment2) {
+      html += renderCalendarTable(cal);
+    } else {
+      html += '<p style="text-align:center;color:#999">Agrega niños a los grupos para generar el calendario</p>';
+    }
+
+    container.innerHTML = html;
+
+    const bgDisplay = document.getElementById('bgImageDisplay');
+    if (bgImageData) {
+      bgDisplay.src = bgImageData;
+      bgDisplay.style.display = 'block';
+    } else {
+      bgDisplay.style.display = 'none';
+    }
+  }
+
+  function renderCalendarTable(cal) {
+    let html = '<table class="calendar-table"><thead><tr>';
+    DAY_NAMES.forEach(name => { html += '<th>' + name + '</th>'; });
+    html += '</tr></thead><tbody><tr>';
+
+    for (let i = 0; i < cal.firstDay; i++) {
+      html += '<td class="empty-cell"></td>';
+    }
+
+    let col = cal.firstDay;
+    for (let d = 1; d <= cal.daysInMonth; d++) {
+      const dow = new Date(currentYear, currentMonth, d).getDay();
+      if (dow === 0 || dow === 6) continue;
+
+      const isDisabled = cal.disabledDays.includes(d);
+      const cellClass = isDisabled ? 'cell-disabled' : 'cell-active';
+
+      html += '<td class="' + cellClass + '">';
+      html += '<span class="day-number">' + d + '</span>';
+
+      if (isDisabled) {
+        html += '<span class="no-classes">No hay clases</span>';
+      } else {
+        const mn = cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '';
+        if (cal.assignment1 && cal.assignment1[d]) {
+          html += '<span class="child-name group1">' + cal.assignment1[d] + ' <span class="menu-badge">Menú ' + mn + '</span></span>';
+        }
+        if (cal.assignment2 && cal.assignment2[d]) {
+          html += '<span class="child-name group2">' + cal.assignment2[d] + ' <span class="menu-badge">Menú ' + mn + '</span></span>';
+        }
+      }
+
+      html += '</td>';
+
+      col++;
+      if (col === 5) {
+        col = 0;
+        html += '</tr><tr>';
+      }
+    }
+
+    if (col > 0) {
+      while (col < 5) {
+        html += '<td class="empty-cell"></td>';
+        col++;
+      }
+    }
+
+    html += '</tr></tbody></table>';
+    return html;
+  }
+
+  function exportPDF() {
+    const cal = lastCal;
+
+    if (!cal || (!cal.assignment1 && !cal.assignment2)) {
+      alert('Primero genera el calendario');
+      return;
+    }
+
+    if (typeof window.jspdf === 'undefined') {
+      alert('La librería de PDF aún no se ha cargado. Recarga la página e intenta de nuevo.');
+      return;
+    }
+
+    const btn = document.getElementById('exportPdfBtn');
+    btn.textContent = '⏳ Generando PDF...';
+    btn.disabled = true;
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'in', format: 'letter' });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+
+      const canvas = renderCalendarToCanvas(cal, 1200, 800);
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      doc.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
+
+      doc.save('calendario-menu-' + MONTH_NAMES[currentMonth].toLowerCase() + '-' + currentYear + '.pdf');
+    } catch(e) {
+      console.error('Error generando PDF', e);
+      alert('Error al generar el PDF: ' + e.message);
+    }
+
+    btn.textContent = '📄 Descargar PDF';
+    btn.disabled = false;
+  }
+
+  function renderCalendarToCanvas(cal, W, H) {
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const margin = 40;
+    const numCols = 5;
+    const colW = (W - margin * 2) / numCols;
+    const headerH = 40;
+    let y = margin;
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, W, H);
+
+    if (bgImageData) {
+      const bgImg = new Image();
+      bgImg.src = bgImageData;
+      ctx.globalAlpha = 0.5;
+      ctx.drawImage(bgImg, 0, 0, W, H);
+      ctx.globalAlpha = 1.0;
+    }
+
+    ctx.font = 'bold 22px Arial, sans-serif';
+    ctx.fillStyle = '#00A2C1';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Calendario de Menú - ' + MONTH_NAMES[currentMonth] + ' ' + currentYear, W / 2, y + 15);
+    y += 40;
+
+    ctx.fillStyle = '#00A2C1';
+    ctx.fillRect(margin, y, W - margin * 2, headerH);
+    ctx.font = 'bold 13px Arial, sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    DAY_NAMES.forEach((name, i) => {
+      ctx.fillText(name, margin + i * colW + colW / 2, y + headerH / 2);
+    });
+    y += headerH;
+
+    let totalDays = 0;
+    for (let d = 1; d <= cal.daysInMonth; d++) {
+      const dow = new Date(currentYear, currentMonth, d).getDay();
+      if (dow !== 0 && dow !== 6) totalDays++;
+    }
+    const numRows = Math.ceil((totalDays + cal.firstDay) / numCols);
+    const rowH = Math.min((H - y - margin) / numRows, 130);
+    const halfH = rowH / 2;
+
+    let col = cal.firstDay;
+    for (let i = 0; i < cal.firstDay; i++) {
+      ctx.strokeStyle = '#dee2e6';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(margin + i * colW, y, colW, rowH);
+    }
+
+    for (let d = 1; d <= cal.daysInMonth; d++) {
+      const dow = new Date(currentYear, currentMonth, d).getDay();
+      if (dow === 0 || dow === 6) continue;
+
+      const isDis = cal.disabledDays.includes(d);
+      const x = margin + col * colW;
+
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(x, y, colW, rowH);
+
+      if (!isDis) {
+        ctx.fillStyle = '#ffebef';
+        ctx.fillRect(x, y, colW, halfH);
+        ctx.fillStyle = '#e6f2ff';
+        ctx.fillRect(x, y + halfH, colW, halfH);
+      }
+      ctx.globalAlpha = 1.0;
+
+      ctx.strokeStyle = '#b4b4b4';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, colW, rowH);
+      ctx.strokeStyle = '#c8c8c8';
+      ctx.beginPath();
+      ctx.moveTo(x, y + halfH);
+      ctx.lineTo(x + colW, y + halfH);
+      ctx.stroke();
+
+      ctx.font = 'bold 14px Arial, sans-serif';
+      ctx.fillStyle = '#333';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(String(d), x + 8, y + 6);
+
+      if (isDis) {
+        ctx.font = 'italic 11px Arial, sans-serif';
+        ctx.fillStyle = '#999';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('No hay clases', x + colW / 2, y + halfH + 15);
+      } else {
+        const mn = cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '';
+        if (cal.assignment1 && cal.assignment1[d]) {
+          ctx.font = 'bold 12px Arial, sans-serif';
+          ctx.fillStyle = '#C83232';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(cal.assignment1[d] + ' - Chicos (' + mn + ')', x + colW / 2, y + halfH - 15, colW - 10);
+        }
+        if (cal.assignment2 && cal.assignment2[d]) {
+          ctx.font = 'bold 12px Arial, sans-serif';
+          ctx.fillStyle = '#1E50AA';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(cal.assignment2[d] + ' - Grandes (' + mn + ')', x + colW / 2, y + halfH + 20, colW - 10);
+        }
+      }
+
+      col++;
+      if (col === numCols) {
+        col = 0;
+        y += rowH;
+      }
+    }
+
+    if (col > 0) {
+      while (col < numCols) {
+        ctx.strokeStyle = '#dee2e6';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(margin + col * colW, y, colW, rowH);
+        col++;
+      }
+    }
+
+    return canvas;
+  }
+
+  function exportJPG() {
+    const cal = lastCal;
+
+    if (!cal || (!cal.assignment1 && !cal.assignment2)) {
+      alert('Primero genera el calendario');
+      return;
+    }
+
+    const btn = document.getElementById('exportJpgBtn');
+    btn.textContent = '⏳ Generando imagen...';
+    btn.disabled = true;
+
+    try {
+      const canvas = renderCalendarToCanvas(cal, 1200, 800);
+
+      canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'calendario-menu-' + MONTH_NAMES[currentMonth].toLowerCase() + '-' + currentYear + '.jpg';
+        a.click();
+        URL.revokeObjectURL(url);
+        btn.textContent = '🖼️ Descargar Imagen';
+        btn.disabled = false;
+      }, 'image/jpeg', 0.95);
+    } catch(e) {
+      console.error('Error generando imagen', e);
+      alert('Error al generar la imagen: ' + e.message);
+      btn.textContent = '🖼️ Descargar Imagen';
+      btn.disabled = false;
+    }
+  }
+
+  function handleImageUpload(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      bgImageData = e.target.result;
+      document.getElementById('bgPreview').src = bgImageData;
+      document.getElementById('bgPreview').style.display = 'block';
+      document.getElementById('removeBgImage').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderAll() {
+    renderChildList(1);
+    renderChildList(2);
+    renderMonths();
+    renderDisabledDays();
+    document.getElementById('menuCount').value = data.menuCount || 5;
+    if (bgImageData) {
+      document.getElementById('bgPreview').src = bgImageData;
+      document.getElementById('bgPreview').style.display = 'block';
+      document.getElementById('removeBgImage').style.display = 'block';
+    }
+  }
+
+  document.querySelectorAll('.btn-add').forEach(btn => {
+    btn.addEventListener('click', function() {
+      addChild(parseInt(this.dataset.group));
+    });
+  });
+
+  document.querySelectorAll('.add-child-form input').forEach(input => {
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const group = this.id === 'newChild1' ? 1 : 2;
+        addChild(group);
+      }
+    });
+  });
+
+  document.getElementById('prevYear').addEventListener('click', function() {
+    currentYear--;
+    renderMonths();
+    renderDisabledDays();
+  });
+
+  document.getElementById('nextYear').addEventListener('click', function() {
+    currentYear++;
+    renderMonths();
+    renderDisabledDays();
+  });
+
+  document.getElementById('generateBtn').addEventListener('click', generateAll);
+  document.getElementById('exportPdfBtn').addEventListener('click', exportPDF);
+  document.getElementById('exportJpgBtn').addEventListener('click', exportJPG);
+  document.getElementById('menuCount').addEventListener('change', function() {
+    data.menuCount = parseInt(this.value) || 5;
+    saveData();
+  });
+
+  document.getElementById('uploadZone').addEventListener('click', function() {
+    document.getElementById('bgImageInput').click();
+  });
+
+  document.getElementById('bgImageInput').addEventListener('change', function() {
+    handleImageUpload(this.files[0]);
+  });
+
+  document.getElementById('removeBgImage').addEventListener('click', function() {
+    bgImageData = null;
+    document.getElementById('bgPreview').style.display = 'none';
+    document.getElementById('removeBgImage').style.display = 'none';
+    document.getElementById('bgImageDisplay').style.display = 'none';
+  });
+
+  loadLocal();
+  initFirebase().then(() => {
+    renderAll();
+  }).catch(() => {
+    renderAll();
+  });
+
+  document.getElementById('backToPanel').addEventListener('click', function() {
+    document.getElementById('bgImageDisplay').style.display = 'none';
+    document.querySelector('.menu-calendar').style.display = 'none';
+    document.querySelector('.admin-panel').style.display = 'block';
+  });
+})();
+</script>

@@ -1,0 +1,25 @@
+---
+---
+<div class="admin-panel">
+  <div class="admin-header">
+    <h2>EVI Admin</h2>
+    <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+  </div>
+  <div class="admin-content">
+    <h3>Aplicaciones</h3>
+    <div class="app-grid">
+      <div class="app-card" id="openCalendar">
+        <div class="app-icon">📅</div>
+        <h4>Calendario de Menú</h4>
+        <p>Genera el calendario mensual de lunch para los grupos de la escuela</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  document.getElementById('logoutBtn').addEventListener('click', function() {
+    localStorage.removeItem('evi_admin_auth');
+    window.location.reload();
+  });
+</script>

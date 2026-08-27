@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AdminLogin from '../components/AdminLogin.astro';
+import AdminPanel from '../components/AdminPanel.astro';
+import MenuCalendar from '../components/MenuCalendar.astro';
+import '../styles/admin.css';
+---
+
+<BaseLayout title="Admin - Educación para la Vida" description="Panel de administración">
+  <script is:inline src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+  <div id="adminRoot">
+    <AdminLogin />
+    <AdminPanel />
+    <MenuCalendar />
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  (function() {
+    const isAuthenticated = localStorage.getItem('evi_admin_auth') === 'true';
+    const login = document.querySelector('.admin-login');
+    const panel = document.querySelector('.admin-panel');
+    const calendar = document.querySelector('.menu-calendar');
+
+    if (isAuthenticated) {
+      login.style.display = 'none';
+      panel.style.display = 'block';
+      calendar.style.display = 'none';
+    } else {
+      login.style.display = 'flex';
+      panel.style.display = 'none';
+      calendar.style.display = 'none';
+    }
+
+    var openCal = document.getElementById('openCalendar');
+    if (openCal) {
+      openCal.addEventListener('click', function() {
+        panel.style.display = 'none';
+        calendar.style.display = 'block';
+      });
+    }
+  })();
+</script>
+
+<script is:inline>
+  window.FIREBASE_CONFIG = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+</script>
