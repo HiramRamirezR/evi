@@ -136,6 +136,7 @@
   let recentTimer = null;
   let previousView = null;
   let announcedFamilies = {};
+  let editingChildIndex = -1;
 
   function getFirebaseConfig() {
     return window.FIREBASE_CONFIG || null;
@@ -447,19 +448,59 @@
         ? '<img class="child-thumb" src="' + child.photo + '">'
         : '<div class="child-thumb-placeholder">👤</div>';
       const item = document.createElement('div');
-      item.className = 'temp-child-item';
+      item.className = 'temp-child-item' + (editingChildIndex === i ? ' editing' : '');
       item.innerHTML = photoHtml +
         '<span class="child-name">' + child.name + '</span>' +
         '<span class="child-taller">' + TALLERES[child.taller] + '</span>' +
+        '<button class="btn-edit-child" data-index="' + i + '">✏️</button>' +
         '<button class="btn-remove-temp-child" data-index="' + i + '">✕</button>';
       container.appendChild(item);
     });
     container.querySelectorAll('.btn-remove-temp-child').forEach(btn => {
       btn.addEventListener('click', function() {
-        tempChildren.splice(parseInt(this.dataset.index), 1);
+        const idx = parseInt(this.dataset.index);
+        if (editingChildIndex === idx) cancelChildEdit();
+        else if (editingChildIndex > idx) editingChildIndex--;
+        tempChildren.splice(idx, 1);
         renderTempChildren();
       });
     });
+    container.querySelectorAll('.btn-edit-child').forEach(btn => {
+      btn.addEventListener('click', function() {
+        startChildEdit(parseInt(this.dataset.index));
+      });
+    });
+  }
+
+  function startChildEdit(index) {
+    const child = tempChildren[index];
+    if (!child) return;
+    editingChildIndex = index;
+    document.getElementById('newChildName').value = child.name;
+    document.getElementById('newChildTaller').value = child.taller;
+    if (child.photo) {
+      tempPhoto = child.photo;
+      document.getElementById('newChildPhotoImg').src = tempPhoto;
+      document.getElementById('newChildPhotoPreview').style.display = 'flex';
+    } else {
+      tempPhoto = null;
+      document.getElementById('newChildPhotoPreview').style.display = 'none';
+    }
+    document.getElementById('addChildToFamily').textContent = 'Actualizar';
+    document.getElementById('addChildToFamily').dataset.mode = 'edit';
+    renderTempChildren();
+    document.getElementById('newChildName').focus();
+  }
+
+  function cancelChildEdit() {
+    editingChildIndex = -1;
+    document.getElementById('newChildName').value = '';
+    document.getElementById('newChildTaller').value = 'casa';
+    tempPhoto = null;
+    document.getElementById('newChildPhotoPreview').style.display = 'none';
+    document.getElementById('newChildPhoto').value = '';
+    document.getElementById('addChildToFamily').textContent = '+ Agregar';
+    document.getElementById('addChildToFamily').dataset.mode = 'add';
   }
 
   function showView(view) {
@@ -534,17 +575,15 @@
     document.getElementById('familyFormTitle').textContent = 'Nueva Familia';
     document.getElementById('editingFamilyId').value = '';
     document.getElementById('familyName').value = '';
-    document.getElementById('newChildName').value = '';
-    document.getElementById('newChildTaller').value = 'casa';
     tempChildren = [];
-    tempPhoto = null;
-    document.getElementById('newChildPhotoPreview').style.display = 'none';
+    cancelChildEdit();
     renderTempChildren();
     document.getElementById('addFamilyForm').style.display = 'block';
   });
 
   document.getElementById('cancelFamilyBtn').addEventListener('click', function() {
     document.getElementById('addFamilyForm').style.display = 'none';
+    cancelChildEdit();
   });
 
   document.getElementById('newChildPhoto').addEventListener('change', function(e) {
@@ -569,12 +608,18 @@
     const name = document.getElementById('newChildName').value.trim();
     const taller = document.getElementById('newChildTaller').value;
     if (!name) return;
-    tempChildren.push({ name: name, taller: taller, photo: tempPhoto || null });
-    document.getElementById('newChildName').value = '';
-    document.getElementById('newChildTaller').value = 'casa';
-    tempPhoto = null;
-    document.getElementById('newChildPhotoPreview').style.display = 'none';
-    document.getElementById('newChildPhoto').value = '';
+
+    if (this.dataset.mode === 'edit' && editingChildIndex >= 0) {
+      tempChildren[editingChildIndex] = { name: name, taller: taller, photo: tempPhoto || null };
+      cancelChildEdit();
+    } else {
+      tempChildren.push({ name: name, taller: taller, photo: tempPhoto || null });
+      document.getElementById('newChildName').value = '';
+      document.getElementById('newChildTaller').value = 'casa';
+      tempPhoto = null;
+      document.getElementById('newChildPhotoPreview').style.display = 'none';
+      document.getElementById('newChildPhoto').value = '';
+    }
     renderTempChildren();
   });
 
@@ -586,6 +631,7 @@
     families[id] = { name: name, children: tempChildren };
     saveData();
     document.getElementById('addFamilyForm').style.display = 'none';
+    cancelChildEdit();
     renderFamiliesAdmin();
   });
 

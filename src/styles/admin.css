@@ -1109,6 +1109,27 @@
   color: #FF6B6B;
 }
 
+.temp-child-item .btn-edit-child {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 0.85em;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.temp-child-item .btn-edit-child:hover {
+  color: #00A2C1;
+  background: #e0f7fa;
+}
+
+.temp-child-item.editing {
+  background: #e0f7fa;
+  border: 2px solid #00A2C1;
+}
+
 .add-child-to-family {
   display: flex;
   gap: 8px;
