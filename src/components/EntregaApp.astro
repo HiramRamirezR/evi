@@ -135,6 +135,7 @@
   let recentChildren = [];
   let recentTimer = null;
   let previousView = null;
+  let announcedFamilies = {};
 
   function getFirebaseConfig() {
     return window.FIREBASE_CONFIG || null;
@@ -295,10 +296,33 @@
       container.innerHTML = '<p class="empty-state">No hay familias creadas. Toca ⚙️ para crearlas.</p>';
       return;
     }
-    container.innerHTML = '';
+
+    const pending = [];
+    const announced = [];
     ids.forEach(id => {
+      if (announcedFamilies[id]) {
+        announced.push(id);
+      } else {
+        pending.push(id);
+      }
+    });
+
+    const sorted = pending.concat(announced);
+    container.innerHTML = '';
+
+    if (announced.length > 0) {
+      const separator = document.createElement('div');
+      separator.className = 'announced-separator';
+      separator.innerHTML = '<span>✓ Anunciadas (' + announced.length + ')</span>';
+      container.appendChild(separator);
+    }
+
+    sorted.forEach(id => {
       const family = families[id];
       const children = family.children || [];
+      const isAnnounced = !!announcedFamilies[id];
+      const count = announcedFamilies[id] || 0;
+
       const photosHtml = children.slice(0, 4).map(child => {
         return child.photo
           ? '<img class="family-card-photo" src="' + child.photo + '">'
@@ -306,18 +330,28 @@
       }).join('');
 
       const card = document.createElement('div');
-      card.className = 'family-card-delivery';
+      card.className = 'family-card-delivery' + (isAnnounced ? ' announced' : '');
       card.dataset.familyId = id;
+
+      let badgeHtml = '';
+      if (isAnnounced) {
+        badgeHtml = '<div class="announced-badge">✓' + (count > 1 ? ' x' + count : '') + '</div>';
+      }
+
       card.innerHTML =
         '<div class="family-card-photos">' + photosHtml + '</div>' +
         '<div class="family-card-name">' + family.name + '</div>' +
-        '<div class="family-card-children-count">' + children.length + ' niño(s)</div>';
+        '<div class="family-card-children-count">' + children.length + ' niño(s)</div>' +
+        badgeHtml;
       card.addEventListener('click', function() { triggerFamily(id); });
       container.appendChild(card);
     });
   }
 
   async function triggerFamily(familyId) {
+    announcedFamilies[familyId] = (announcedFamilies[familyId] || 0) + 1;
+    renderFamiliesGrid();
+
     if (useFirebase && db) {
       try {
         const { ref: dbRef, set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
