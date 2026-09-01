@@ -22,3 +22,20 @@ import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 
   <WhatsAppFloat />
 </BaseLayout>
+
+<script>
+  (function() {
+    const logo = document.querySelector('a[href="/"]');
+    if (!logo) return;
+    let clicks = [];
+    logo.addEventListener('click', function() {
+      const now = Date.now();
+      clicks.push(now);
+      clicks = clicks.filter(t => now - t < 600);
+      if (clicks.length >= 3) {
+        clicks = [];
+        window.location.href = '/admin';
+      }
+    });
+  })();
+</script>

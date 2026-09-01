@@ -133,6 +133,8 @@
   let previousView = null;
   let announcedFamilies = {};
   let editingChildIndex = -1;
+  let announcementQueue = [];
+  let isAnnouncing = false;
 
   function getFirebaseConfig() {
     return window.FIREBASE_CONFIG || null;
@@ -169,8 +171,8 @@
 
   async function listenNotifications() {
     if (!db) return;
-    const { ref: dbRef, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
-    onValue(dbRef(db, 'entrega/notification'), (snapshot) => {
+    const { ref: dbRef, onChildAdded } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    onChildAdded(dbRef(db, 'entrega/notifications'), (snapshot) => {
       const val = snapshot.val();
       if (val && val.familyId && selectedTaller) {
         handleNotification(val);
@@ -241,31 +243,96 @@
     const salonChildren = family.children.filter(c => c.taller === selectedTaller);
     if (salonChildren.length === 0) return;
 
-    const mainEl = document.getElementById('salonMain');
-    mainEl.innerHTML = '';
-    salonChildren.forEach(child => {
-      const card = document.createElement('div');
-      card.className = 'salon-child-card announcing';
-      const photoHtml = child.photo
-        ? '<img class="salon-child-photo" src="' + child.photo + '">'
-        : '<div class="salon-child-photo-placeholder">👤</div>';
-      card.innerHTML = photoHtml + '<div class="salon-child-name">' + child.name + '</div>';
-      mainEl.appendChild(card);
+    announcementQueue.push({
+      familyId: notification.familyId,
+      familyName: family.name,
+      children: salonChildren,
+      status: 'pending'
     });
 
-    const names = salonChildren.map(c => c.name);
+    renderQueue();
+
+    if (!isAnnouncing) {
+      processQueue();
+    }
+  }
+
+  async function processQueue() {
+    const next = announcementQueue.find(q => q.status === 'pending');
+    if (!next) {
+      isAnnouncing = false;
+      return;
+    }
+
+    isAnnouncing = true;
+    next.status = 'announcing';
+    renderQueue();
+
+    const names = next.children.map(c => c.name);
     await speakSequence(names);
 
-    salonChildren.forEach(child => {
+    next.children.forEach(child => {
       recentChildren.push({
-        id: notification.familyId + '-' + child.name,
+        id: next.familyId + '-' + child.name,
         name: child.name,
         photo: child.photo,
         timestamp: Date.now()
       });
     });
     renderRecent();
-    mainEl.innerHTML = '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
+
+    next.status = 'done';
+    announcementQueue = announcementQueue.filter(q => q.status !== 'done');
+    renderQueue();
+
+    processQueue();
+  }
+
+  function renderQueue() {
+    const mainEl = document.getElementById('salonMain');
+    mainEl.innerHTML = '';
+
+    const announcing = announcementQueue.filter(q => q.status === 'announcing');
+    const pending = announcementQueue.filter(q => q.status === 'pending');
+
+    if (announcing.length === 0 && pending.length === 0) {
+      mainEl.innerHTML = '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
+      return;
+    }
+
+    announcing.forEach(item => {
+      item.children.forEach(child => {
+        const card = document.createElement('div');
+        card.className = 'salon-child-card announcing';
+        const photoHtml = child.photo
+          ? '<img class="salon-child-photo" src="' + child.photo + '">'
+          : '<div class="salon-child-photo-placeholder">👤</div>';
+        card.innerHTML = photoHtml + '<div class="salon-child-name">' + child.name + '</div>' +
+          '<div class="salon-speaking-indicator"><span></span><span></span><span></span></div>';
+        mainEl.appendChild(card);
+      });
+    });
+
+    if (pending.length > 0) {
+      const queueSection = document.createElement('div');
+      queueSection.className = 'queue-section';
+
+      const label = document.createElement('div');
+      label.className = 'queue-label';
+      label.textContent = 'Siguiente:';
+      queueSection.appendChild(label);
+
+      pending.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'queue-item';
+        row.innerHTML = '<span class="queue-family-name">' + item.familyName + '</span>' +
+          '<span class="queue-child-count">' + item.children.length + ' niño(s)</span>' +
+          '<span class="queue-waiting">⏳</span>';
+        queueSection.appendChild(row);
+      });
+
+      mainEl.appendChild(queueSection);
+    }
   }
 
   function renderRecent() {
@@ -357,8 +424,8 @@
 
     if (db) {
       try {
-        const { ref: dbRef, set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
-        await set(dbRef(db, 'entrega/notification'), {
+        const { ref: dbRef, push } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+        await push(dbRef(db, 'entrega/notifications'), {
           familyId: familyId,
           timestamp: Date.now(),
           triggeredBy: 'controlador'

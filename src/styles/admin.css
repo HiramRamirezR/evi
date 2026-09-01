@@ -1565,8 +1565,8 @@
 }
 
 .salon-child-photo {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid #00A2C1;
@@ -1574,8 +1574,8 @@
 }
 
 .salon-child-photo-placeholder {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   background: #DEE2E6;
   display: flex;
@@ -1587,9 +1587,88 @@
 }
 
 .salon-child-name {
-  font-size: 1.5em;
+  font-size: 1.7em;
   font-weight: 700;
   color: #333;
+}
+
+/* Queue section */
+.queue-section {
+  width: 100%;
+  padding: 20px 24px;
+  border-top: 2px solid #f0f2f5;
+  margin-top: 20px;
+}
+
+.queue-label {
+  font-size: 0.9em;
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  animation: fadeSlideIn 0.3s ease;
+}
+
+@keyframes fadeSlideIn {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.queue-family-name {
+  font-weight: 700;
+  color: #444;
+  font-size: 0.95em;
+}
+
+.queue-child-count {
+  color: #888;
+  font-size: 0.85em;
+}
+
+.queue-waiting {
+  margin-left: auto;
+  font-size: 0.85em;
+  animation: pulse 1.5s infinite;
+}
+
+/* Speaking indicator */
+.salon-speaking-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 14px;
+}
+
+.salon-speaking-indicator span {
+  width: 8px;
+  height: 8px;
+  background: #00A2C1;
+  border-radius: 50%;
+  animation: speakBounce 1s ease-in-out infinite;
+}
+
+.salon-speaking-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.salon-speaking-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes speakBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-6px); opacity: 1; }
 }
 
 .salon-recent {
@@ -1631,8 +1710,8 @@
 
 .recent-photo,
 .recent-photo-placeholder {
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -1642,12 +1721,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8em;
+  font-size: 1em;
 }
 
 .recent-name {
   flex: 1;
-  font-size: 0.85em;
+  font-size: 1em;
   font-weight: 600;
   color: #333;
 }
@@ -1683,6 +1762,28 @@
   .salon-recent {
     border-left: none;
     border-top: 2px solid #f0f2f5;
+  }
+  .salon-child-photo,
+  .salon-child-photo-placeholder {
+    width: 100px;
+    height: 100px;
+  }
+  .salon-child-name {
+    font-size: 1.3em;
+  }
+  .salon-child-card {
+    padding: 20px;
+  }
+  .recent-photo,
+  .recent-photo-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+  .recent-name {
+    font-size: 0.9em;
+  }
+  .queue-section {
+    padding: 16px;
   }
   .add-child-to-family {
     flex-direction: column;

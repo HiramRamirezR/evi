@@ -57,6 +57,21 @@ const navItems = [
     });
   }
 
+  (function() {
+    const logo = document.querySelector('.logo a');
+    if (!logo) return;
+    let clicks = [];
+    logo.addEventListener('click', function(e) {
+      const now = Date.now();
+      clicks.push(now);
+      clicks = clicks.filter(t => now - t < 600);
+      if (clicks.length >= 3) {
+        clicks = [];
+        window.location.href = '/admin';
+      }
+    });
+  })();
+
   document.querySelectorAll('a.scroll').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       const href = this.getAttribute('href');
