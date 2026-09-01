@@ -29,17 +29,13 @@
       <h3>🏫 Modo Salón</h3>
       <button class="btn-gear" id="openEntregaSettings2">⚙️</button>
     </div>
-    <div class="taller-select" id="tallerSelect">
-      <h4>Selecciona tu taller</h4>
-      <div class="taller-options">
-        <button class="taller-btn" data-taller="casa">Casa de Niños</button>
-        <button class="taller-btn" data-taller="taller1">Taller 1</button>
-        <button class="taller-btn" data-taller="taller2">Taller 2</button>
-        <button class="taller-btn" data-taller="taller3">Taller 3</button>
-      </div>
+    <div class="salon-tabs" id="salonTabs">
+      <button class="salon-tab active" data-taller="casa">Casa de Niños</button>
+      <button class="salon-tab" data-taller="taller1">Taller 1</button>
+      <button class="salon-tab" data-taller="taller2">Taller 2</button>
+      <button class="salon-tab" data-taller="taller3">Taller 3</button>
     </div>
-    <div class="salon-active" id="salonActive" style="display:none">
-      <div class="salon-taller-label" id="salonTallerLabel"></div>
+    <div class="salon-active" id="salonActive">
       <div class="salon-columns">
         <div class="salon-main" id="salonMain">
           <div class="salon-empty-state">
@@ -529,7 +525,11 @@
 
   document.getElementById('modeSalon').addEventListener('click', function() {
     currentMode = 'salon';
+    selectedTaller = 'casa';
     showView('salon');
+    updateSalonTabs();
+    if (recentTimer) clearInterval(recentTimer);
+    recentTimer = setInterval(renderRecent, 1000);
   });
 
   document.getElementById('backToModes').addEventListener('click', function() {
@@ -540,9 +540,8 @@
   document.getElementById('backToModes2').addEventListener('click', function() {
     currentMode = null;
     selectedTaller = null;
+    if (recentTimer) clearInterval(recentTimer);
     showView('mode');
-    document.getElementById('salonActive').style.display = 'none';
-    document.getElementById('tallerSelect').style.display = 'block';
   });
 
   document.getElementById('openEntregaSettings').addEventListener('click', function() {
@@ -564,14 +563,18 @@
     }
   });
 
-  document.querySelectorAll('.taller-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
+  function updateSalonTabs() {
+    document.querySelectorAll('.salon-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.taller === selectedTaller);
+    });
+  }
+
+  document.querySelectorAll('.salon-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
       selectedTaller = this.dataset.taller;
-      document.getElementById('tallerSelect').style.display = 'none';
-      document.getElementById('salonActive').style.display = 'block';
-      document.getElementById('salonTallerLabel').textContent = TALLERES[selectedTaller];
-      if (recentTimer) clearInterval(recentTimer);
-      recentTimer = setInterval(renderRecent, 1000);
+      updateSalonTabs();
+      document.getElementById('salonMain').innerHTML =
+        '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
     });
   });
 
