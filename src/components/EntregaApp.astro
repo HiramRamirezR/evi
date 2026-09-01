@@ -143,12 +143,11 @@
   }
 
   let db = null;
-  let useFirebase = false;
 
   async function initFirebase() {
     const config = getFirebaseConfig();
     if (!config || !config.apiKey || config.apiKey === 'YOUR_API_KEY') {
-      loadLocal();
+      console.error('Firebase no configurado');
       return;
     }
     try {
@@ -156,17 +155,15 @@
       const { getDatabase } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
       const app = initializeApp(config, 'entrega-app');
       db = getDatabase(app);
-      useFirebase = true;
       listenFamilies();
       listenNotifications();
     } catch(e) {
-      console.warn('Firebase no disponible, usando localStorage', e);
-      loadLocal();
+      console.error('Error inicializando Firebase', e);
     }
   }
 
   async function listenFamilies() {
-    if (!useFirebase || !db) return;
+    if (!db) return;
     const { ref: dbRef, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
     onValue(dbRef(db, 'entrega/families'), (snapshot) => {
       families = snapshot.val() || {};
@@ -175,7 +172,7 @@
   }
 
   async function listenNotifications() {
-    if (!useFirebase || !db) return;
+    if (!db) return;
     const { ref: dbRef, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
     onValue(dbRef(db, 'entrega/notification'), (snapshot) => {
       const val = snapshot.val();
@@ -185,31 +182,40 @@
     });
   }
 
-  function loadLocal() {
-    const saved = localStorage.getItem('evi-entrega-families');
-    if (saved) families = JSON.parse(saved);
-  }
-
   async function saveData() {
-    if (useFirebase && db) {
-      try {
-        const { ref: dbRef, set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
-        await set(dbRef(db, 'entrega/families'), families);
-      } catch(e) {
-        console.warn('Error guardando en Firebase', e);
-        saveLocal();
-      }
-    } else {
-      saveLocal();
+    if (!db) {
+      console.error('Firebase no disponible');
+      return;
     }
-  }
-
-  function saveLocal() {
-    localStorage.setItem('evi-entrega-families', JSON.stringify(families));
+    try {
+      const { ref: dbRef, set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+      await set(dbRef(db, 'entrega/families'), families);
+    } catch(e) {
+      console.error('Error guardando en Firebase', e);
+    }
   }
 
   function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
+  function compressPhoto(dataUrl) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const MAX = 200;
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+        else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = function() { resolve(dataUrl); };
+      img.src = dataUrl;
+    });
   }
 
   function speak(text) {
@@ -353,7 +359,7 @@
     announcedFamilies[familyId] = (announcedFamilies[familyId] || 0) + 1;
     renderFamiliesGrid();
 
-    if (useFirebase && db) {
+    if (db) {
       try {
         const { ref: dbRef, set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
         await set(dbRef(db, 'entrega/notification'), {
@@ -362,8 +368,6 @@
           triggeredBy: 'controlador'
         });
       } catch(e) { console.error('Error sending notification', e); }
-    } else {
-      handleNotification({ familyId: familyId });
     }
   }
 
@@ -590,8 +594,8 @@
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(ev) {
-      tempPhoto = ev.target.result;
+    reader.onload = async function(ev) {
+      tempPhoto = await compressPhoto(ev.target.result);
       document.getElementById('newChildPhotoImg').src = tempPhoto;
       document.getElementById('newChildPhotoPreview').style.display = 'flex';
     };

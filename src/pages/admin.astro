@@ -8,6 +8,17 @@ import '../styles/admin.css';
 ---
 
 <BaseLayout title="Admin - Educación para la Vida" description="Panel de administración">
+  <script is:inline>
+    window.FIREBASE_CONFIG = {
+      apiKey: "AIzaSyAl9lvO43hnZ0qCZPoUmUm4-pfmlboXXs8",
+      authDomain: "evi1-39416.firebaseapp.com",
+      databaseURL: "https://evi1-39416-default-rtdb.firebaseio.com",
+      projectId: "evi1-39416",
+      storageBucket: "evi1-39416.firebasestorage.app",
+      messagingSenderId: "920315618667",
+      appId: "1:920315618667:web:f647b8655561a3560f582e"
+    };
+  </script>
   <script is:inline src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
   <div id="adminRoot">
     <AdminLogin />
@@ -61,16 +72,4 @@ import '../styles/admin.css';
       });
     }
   })();
-</script>
-
-<script is:inline>
-  window.FIREBASE_CONFIG = {
-    apiKey: "AIzaSyAl9lvO43hnZ0qCZPoUmUm4-pfmlboXXs8",
-    authDomain: "evi1-39416.firebaseapp.com",
-    databaseURL: "https://evi1-39416-default-rtdb.firebaseio.com",
-    projectId: "evi1-39416",
-    storageBucket: "evi1-39416.firebasestorage.app",
-    messagingSenderId: "920315618667",
-    appId: "1:920315618667:web:f647b8655561a3560f582e"
-  };
 </script>
