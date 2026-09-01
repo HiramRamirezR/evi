@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import AdminLogin from '../components/AdminLogin.astro';
 import AdminPanel from '../components/AdminPanel.astro';
 import MenuCalendar from '../components/MenuCalendar.astro';
+import EntregaApp from '../components/EntregaApp.astro';
 import '../styles/admin.css';
 ---
 
@@ -12,6 +13,7 @@ import '../styles/admin.css';
     <AdminLogin />
     <AdminPanel />
     <MenuCalendar />
+    <EntregaApp />
   </div>
 </BaseLayout>
 
@@ -21,15 +23,18 @@ import '../styles/admin.css';
     const login = document.querySelector('.admin-login');
     const panel = document.querySelector('.admin-panel');
     const calendar = document.querySelector('.menu-calendar');
+    const entregaApp = document.querySelector('.entrega-app');
 
     if (isAuthenticated) {
       login.style.display = 'none';
       panel.style.display = 'block';
       calendar.style.display = 'none';
+      if (entregaApp) entregaApp.style.display = 'none';
     } else {
       login.style.display = 'flex';
       panel.style.display = 'none';
       calendar.style.display = 'none';
+      if (entregaApp) entregaApp.style.display = 'none';
     }
 
     var openCal = document.getElementById('openCalendar');
@@ -37,6 +42,22 @@ import '../styles/admin.css';
       openCal.addEventListener('click', function() {
         panel.style.display = 'none';
         calendar.style.display = 'block';
+        if (entregaApp) entregaApp.style.display = 'none';
+      });
+    }
+
+    var openEntregaApp = document.getElementById('openEntregaApp');
+    if (openEntregaApp) {
+      openEntregaApp.addEventListener('click', function() {
+        panel.style.display = 'none';
+        calendar.style.display = 'none';
+        if (entregaApp) {
+          entregaApp.style.display = 'block';
+          document.getElementById('entregaModeSelect').style.display = 'flex';
+          document.getElementById('entregaControl').style.display = 'none';
+          document.getElementById('salonControl').style.display = 'none';
+          document.getElementById('entregaSettingsPanel').style.display = 'none';
+        }
       });
     }
   })();

@@ -1,0 +1,560 @@
+---
+---
+<div class="entrega-app" style="display:none">
+  <div class="entrega-mode-select" id="entregaModeSelect">
+    <div class="mode-card" id="modeEntrega">
+      <div class="mode-icon">🚗</div>
+      <h3>Modo Entrega</h3>
+      <p>Para quien avisa que los niños se van. Toca el nombre de la familia para notificar a todos los salones.</p>
+    </div>
+    <div class="mode-card" id="modeSalon">
+      <div class="mode-icon">🏫</div>
+      <h3>Modo Salón</h3>
+      <p>Para los salones. Selecciona tu taller y recibe notificaciones de los niños que se van.</p>
+    </div>
+  </div>
+
+  <div class="entrega-control" id="entregaControl" style="display:none">
+    <div class="entrega-topbar">
+      <button class="back-btn" id="backToModes">← Cambiar modo</button>
+      <h3>🚗 Modo Entrega</h3>
+      <button class="btn-gear" id="openEntregaSettings">⚙️</button>
+    </div>
+    <div class="families-grid" id="familiesGrid"></div>
+  </div>
+
+  <div class="salon-control" id="salonControl" style="display:none">
+    <div class="entrega-topbar">
+      <button class="back-btn" id="backToModes2">← Cambiar modo</button>
+      <h3>🏫 Modo Salón</h3>
+      <button class="btn-gear" id="openEntregaSettings2">⚙️</button>
+    </div>
+    <div class="taller-select" id="tallerSelect">
+      <h4>Selecciona tu taller</h4>
+      <div class="taller-options">
+        <button class="taller-btn" data-taller="casa">Casa de Niños</button>
+        <button class="taller-btn" data-taller="taller1">Taller 1</button>
+        <button class="taller-btn" data-taller="taller2">Taller 2</button>
+        <button class="taller-btn" data-taller="taller3">Taller 3</button>
+      </div>
+    </div>
+    <div class="salon-active" id="salonActive" style="display:none">
+      <div class="salon-taller-label" id="salonTallerLabel"></div>
+      <div class="salon-columns">
+        <div class="salon-main" id="salonMain">
+          <div class="salon-empty-state">
+            <div class="salon-waiting-icon">⏳</div>
+            <p>Esperando notificaciones...</p>
+          </div>
+        </div>
+        <div class="salon-recent" id="salonRecent">
+          <h4>Recientes</h4>
+          <div class="recent-list" id="recentList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="entrega-settings-panel" id="entregaSettingsPanel" style="display:none">
+    <div class="entrega-topbar">
+      <button class="back-btn" id="closeSettings">← Volver</button>
+      <h3>⚙️ Administrar Familias</h3>
+    </div>
+    <div class="entrega-settings-content">
+      <div class="entrega-talleres-info">
+        <h4>Talleres</h4>
+        <div class="talleres-list">
+          <span class="taller-badge">Casa de Niños</span>
+          <span class="taller-badge">Taller 1</span>
+          <span class="taller-badge">Taller 2</span>
+          <span class="taller-badge">Taller 3</span>
+        </div>
+      </div>
+
+      <div class="entrega-families-section">
+        <div class="section-header">
+          <h4>Familias</h4>
+          <button class="btn-add-family" id="addFamilyBtn">+ Nueva Familia</button>
+        </div>
+        <div id="familiesList" class="families-list"></div>
+      </div>
+
+      <div class="entrega-add-family-form" id="addFamilyForm" style="display:none">
+        <h4 id="familyFormTitle">Nueva Familia</h4>
+        <input type="hidden" id="editingFamilyId">
+        <div class="form-group">
+          <label>Nombre de la familia</label>
+          <input type="text" id="familyName" placeholder="Ej: Azul y Leo">
+        </div>
+        <div class="family-children-section">
+          <label>Niños</label>
+          <div id="familyChildrenList" class="family-children-list"></div>
+          <div class="add-child-to-family">
+            <input type="text" id="newChildName" placeholder="Nombre del niño">
+            <select id="newChildTaller">
+              <option value="casa">Casa de Niños</option>
+              <option value="taller1">Taller 1</option>
+              <option value="taller2">Taller 2</option>
+              <option value="taller3">Taller 3</option>
+            </select>
+            <label class="photo-upload-label">
+              📷 Foto
+              <input type="file" id="newChildPhoto" accept="image/*" style="display:none">
+            </label>
+            <button class="btn-add" id="addChildToFamily">+ Agregar</button>
+          </div>
+          <div id="newChildPhotoPreview" class="child-photo-preview" style="display:none">
+            <img id="newChildPhotoImg">
+            <button class="btn-remove-photo" id="removeNewChildPhoto">✕</button>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-save" id="saveFamilyBtn">Guardar Familia</button>
+          <button class="btn-cancel" id="cancelFamilyBtn">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+(function() {
+  const TALLERES = {
+    casa: 'Casa de Niños',
+    taller1: 'Taller 1',
+    taller2: 'Taller 2',
+    taller3: 'Taller 3'
+  };
+  const RECENT_DURATION = 60000;
+
+  let families = {};
+  let tempChildren = [];
+  let tempPhoto = null;
+  let currentMode = null;
+  let selectedTaller = null;
+  let recentChildren = [];
+  let recentTimer = null;
+  let previousView = null;
+
+  function getFirebaseConfig() {
+    return window.FIREBASE_CONFIG || null;
+  }
+
+  let db = null;
+  let useFirebase = false;
+
+  async function initFirebase() {
+    const config = getFirebaseConfig();
+    if (!config || !config.apiKey || config.apiKey === 'YOUR_API_KEY') {
+      loadLocal();
+      return;
+    }
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+      const { getDatabase } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+      const app = initializeApp(config, 'entrega-app');
+      db = getDatabase(app);
+      useFirebase = true;
+      listenFamilies();
+      listenNotifications();
+    } catch(e) {
+      console.warn('Firebase no disponible, usando localStorage', e);
+      loadLocal();
+    }
+  }
+
+  async function listenFamilies() {
+    if (!useFirebase || !db) return;
+    const { ref: dbRef, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    onValue(dbRef(db, 'entrega/families'), (snapshot) => {
+      families = snapshot.val() || {};
+      if (currentMode === 'entrega') renderFamiliesGrid();
+    });
+  }
+
+  async function listenNotifications() {
+    if (!useFirebase || !db) return;
+    const { ref: dbRef, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    onValue(dbRef(db, 'entrega/notification'), (snapshot) => {
+      const val = snapshot.val();
+      if (val && val.familyId && selectedTaller) {
+        handleNotification(val);
+      }
+    });
+  }
+
+  function loadLocal() {
+    const saved = localStorage.getItem('evi-entrega-families');
+    if (saved) families = JSON.parse(saved);
+  }
+
+  async function saveData() {
+    if (useFirebase && db) {
+      try {
+        const { ref: dbRef, set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+        await set(dbRef(db, 'entrega/families'), families);
+      } catch(e) {
+        console.warn('Error guardando en Firebase', e);
+        saveLocal();
+      }
+    } else {
+      saveLocal();
+    }
+  }
+
+  function saveLocal() {
+    localStorage.setItem('evi-entrega-families', JSON.stringify(families));
+  }
+
+  function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
+  function speak(text) {
+    return new Promise((resolve) => {
+      if (!('speechSynthesis' in window)) { resolve(); return; }
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'es-MX';
+      u.rate = 0.9;
+      u.onend = resolve;
+      u.onerror = resolve;
+      window.speechSynthesis.speak(u);
+    });
+  }
+
+  async function speakSequence(names) {
+    for (const name of names) {
+      await speak(name);
+      await new Promise(r => setTimeout(r, 500));
+      await speak(name);
+      await new Promise(r => setTimeout(r, 1500));
+    }
+  }
+
+  async function handleNotification(notification) {
+    const family = families[notification.familyId];
+    if (!family || !family.children) return;
+    const salonChildren = family.children.filter(c => c.taller === selectedTaller);
+    if (salonChildren.length === 0) return;
+
+    const mainEl = document.getElementById('salonMain');
+    mainEl.innerHTML = '';
+    salonChildren.forEach(child => {
+      const card = document.createElement('div');
+      card.className = 'salon-child-card announcing';
+      const photoHtml = child.photo
+        ? '<img class="salon-child-photo" src="' + child.photo + '">'
+        : '<div class="salon-child-photo-placeholder">👤</div>';
+      card.innerHTML = photoHtml + '<div class="salon-child-name">' + child.name + '</div>';
+      mainEl.appendChild(card);
+    });
+
+    const names = salonChildren.map(c => c.name);
+    await speakSequence(names);
+
+    salonChildren.forEach(child => {
+      recentChildren.push({
+        id: notification.familyId + '-' + child.name,
+        name: child.name,
+        photo: child.photo,
+        timestamp: Date.now()
+      });
+    });
+    renderRecent();
+    mainEl.innerHTML = '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
+  }
+
+  function renderRecent() {
+    const container = document.getElementById('recentList');
+    const now = Date.now();
+    recentChildren = recentChildren.filter(c => (now - c.timestamp) < RECENT_DURATION);
+
+    if (recentChildren.length === 0) {
+      container.innerHTML = '<p class="recent-empty">No hay recientes</p>';
+      return;
+    }
+    container.innerHTML = '';
+    recentChildren.forEach(child => {
+      const remaining = 60 - Math.floor((now - child.timestamp) / 1000);
+      const photoHtml = child.photo
+        ? '<img class="recent-photo" src="' + child.photo + '">'
+        : '<div class="recent-photo-placeholder">👤</div>';
+      const item = document.createElement('div');
+      item.className = 'recent-item';
+      item.innerHTML = photoHtml +
+        '<span class="recent-name">' + child.name + '</span>' +
+        '<span class="recent-timer">' + remaining + 's</span>';
+      container.appendChild(item);
+    });
+  }
+
+  function renderFamiliesGrid() {
+    const container = document.getElementById('familiesGrid');
+    const ids = Object.keys(families);
+    if (ids.length === 0) {
+      container.innerHTML = '<p class="empty-state">No hay familias creadas. Toca ⚙️ para crearlas.</p>';
+      return;
+    }
+    container.innerHTML = '';
+    ids.forEach(id => {
+      const family = families[id];
+      const children = family.children || [];
+      const photosHtml = children.slice(0, 4).map(child => {
+        return child.photo
+          ? '<img class="family-card-photo" src="' + child.photo + '">'
+          : '<div class="family-card-photo-placeholder">👤</div>';
+      }).join('');
+
+      const card = document.createElement('div');
+      card.className = 'family-card-delivery';
+      card.dataset.familyId = id;
+      card.innerHTML =
+        '<div class="family-card-photos">' + photosHtml + '</div>' +
+        '<div class="family-card-name">' + family.name + '</div>' +
+        '<div class="family-card-children-count">' + children.length + ' niño(s)</div>';
+      card.addEventListener('click', function() { triggerFamily(id); });
+      container.appendChild(card);
+    });
+  }
+
+  async function triggerFamily(familyId) {
+    if (useFirebase && db) {
+      try {
+        const { ref: dbRef, set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+        await set(dbRef(db, 'entrega/notification'), {
+          familyId: familyId,
+          timestamp: Date.now(),
+          triggeredBy: 'controlador'
+        });
+      } catch(e) { console.error('Error sending notification', e); }
+    } else {
+      handleNotification({ familyId: familyId });
+    }
+  }
+
+  // --- Admin / Settings ---
+  function renderFamiliesAdmin() {
+    const container = document.getElementById('familiesList');
+    const ids = Object.keys(families);
+    if (ids.length === 0) {
+      container.innerHTML = '<p class="empty-state">No hay familias creadas. Agrega una para comenzar.</p>';
+      return;
+    }
+    container.innerHTML = '';
+    ids.forEach(id => {
+      const family = families[id];
+      const childrenHtml = (family.children || []).map((child, i) => {
+        const photoHtml = child.photo
+          ? '<img class="child-thumb" src="' + child.photo + '">'
+          : '<div class="child-thumb-placeholder">👤</div>';
+        return '<div class="family-child-item">' + photoHtml +
+          '<span class="child-name">' + child.name + '</span>' +
+          '<span class="child-taller">' + TALLERES[child.taller] + '</span>' +
+          '<button class="btn-remove-child" data-family="' + id + '" data-index="' + i + '">✕</button>' +
+          '</div>';
+      }).join('');
+
+      const card = document.createElement('div');
+      card.className = 'family-card';
+      card.innerHTML =
+        '<div class="family-card-header">' +
+          '<h5>' + family.name + '</h5>' +
+          '<div class="family-actions">' +
+            '<button class="btn-edit-family" data-id="' + id + '">✏️</button>' +
+            '<button class="btn-delete-family" data-id="' + id + '">🗑️</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="family-card-children">' + childrenHtml + '</div>';
+      container.appendChild(card);
+    });
+
+    container.querySelectorAll('.btn-delete-family').forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (confirm('¿Eliminar esta familia?')) {
+          delete families[this.dataset.id];
+          saveData();
+          renderFamiliesAdmin();
+        }
+      });
+    });
+    container.querySelectorAll('.btn-edit-family').forEach(btn => {
+      btn.addEventListener('click', function() { editFamily(this.dataset.id); });
+    });
+    container.querySelectorAll('.btn-remove-child').forEach(btn => {
+      btn.addEventListener('click', function() {
+        families[this.dataset.family].children.splice(parseInt(this.dataset.index), 1);
+        saveData();
+        renderFamiliesAdmin();
+      });
+    });
+  }
+
+  function editFamily(id) {
+    const family = families[id];
+    if (!family) return;
+    document.getElementById('familyFormTitle').textContent = 'Editar Familia';
+    document.getElementById('editingFamilyId').value = id;
+    document.getElementById('familyName').value = family.name;
+    tempChildren = JSON.parse(JSON.stringify(family.children || []));
+    tempPhoto = null;
+    renderTempChildren();
+    document.getElementById('addFamilyForm').style.display = 'block';
+  }
+
+  function renderTempChildren() {
+    const container = document.getElementById('familyChildrenList');
+    if (tempChildren.length === 0) {
+      container.innerHTML = '<p class="empty-hint">Agrega niños a esta familia</p>';
+      return;
+    }
+    container.innerHTML = '';
+    tempChildren.forEach((child, i) => {
+      const photoHtml = child.photo
+        ? '<img class="child-thumb" src="' + child.photo + '">'
+        : '<div class="child-thumb-placeholder">👤</div>';
+      const item = document.createElement('div');
+      item.className = 'temp-child-item';
+      item.innerHTML = photoHtml +
+        '<span class="child-name">' + child.name + '</span>' +
+        '<span class="child-taller">' + TALLERES[child.taller] + '</span>' +
+        '<button class="btn-remove-temp-child" data-index="' + i + '">✕</button>';
+      container.appendChild(item);
+    });
+    container.querySelectorAll('.btn-remove-temp-child').forEach(btn => {
+      btn.addEventListener('click', function() {
+        tempChildren.splice(parseInt(this.dataset.index), 1);
+        renderTempChildren();
+      });
+    });
+  }
+
+  function showView(view) {
+    document.getElementById('entregaModeSelect').style.display = view === 'mode' ? 'flex' : 'none';
+    document.getElementById('entregaControl').style.display = view === 'entrega' ? 'block' : 'none';
+    document.getElementById('salonControl').style.display = view === 'salon' ? 'block' : 'none';
+    document.getElementById('entregaSettingsPanel').style.display = view === 'settings' ? 'block' : 'none';
+  }
+
+  function openSettings(from) {
+    previousView = from;
+    showView('settings');
+    renderFamiliesAdmin();
+  }
+
+  // --- Event Listeners ---
+  document.getElementById('modeEntrega').addEventListener('click', function() {
+    currentMode = 'entrega';
+    showView('entrega');
+    renderFamiliesGrid();
+  });
+
+  document.getElementById('modeSalon').addEventListener('click', function() {
+    currentMode = 'salon';
+    showView('salon');
+  });
+
+  document.getElementById('backToModes').addEventListener('click', function() {
+    currentMode = null;
+    showView('mode');
+  });
+
+  document.getElementById('backToModes2').addEventListener('click', function() {
+    currentMode = null;
+    selectedTaller = null;
+    showView('mode');
+    document.getElementById('salonActive').style.display = 'none';
+    document.getElementById('tallerSelect').style.display = 'block';
+  });
+
+  document.getElementById('openEntregaSettings').addEventListener('click', function() {
+    openSettings('entrega');
+  });
+
+  document.getElementById('openEntregaSettings2').addEventListener('click', function() {
+    openSettings('salon');
+  });
+
+  document.getElementById('closeSettings').addEventListener('click', function() {
+    if (previousView === 'entrega') {
+      showView('entrega');
+      renderFamiliesGrid();
+    } else if (previousView === 'salon') {
+      showView('salon');
+    } else {
+      showView('mode');
+    }
+  });
+
+  document.querySelectorAll('.taller-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      selectedTaller = this.dataset.taller;
+      document.getElementById('tallerSelect').style.display = 'none';
+      document.getElementById('salonActive').style.display = 'block';
+      document.getElementById('salonTallerLabel').textContent = TALLERES[selectedTaller];
+      if (recentTimer) clearInterval(recentTimer);
+      recentTimer = setInterval(renderRecent, 1000);
+    });
+  });
+
+  document.getElementById('addFamilyBtn').addEventListener('click', function() {
+    document.getElementById('familyFormTitle').textContent = 'Nueva Familia';
+    document.getElementById('editingFamilyId').value = '';
+    document.getElementById('familyName').value = '';
+    document.getElementById('newChildName').value = '';
+    document.getElementById('newChildTaller').value = 'casa';
+    tempChildren = [];
+    tempPhoto = null;
+    document.getElementById('newChildPhotoPreview').style.display = 'none';
+    renderTempChildren();
+    document.getElementById('addFamilyForm').style.display = 'block';
+  });
+
+  document.getElementById('cancelFamilyBtn').addEventListener('click', function() {
+    document.getElementById('addFamilyForm').style.display = 'none';
+  });
+
+  document.getElementById('newChildPhoto').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      tempPhoto = ev.target.result;
+      document.getElementById('newChildPhotoImg').src = tempPhoto;
+      document.getElementById('newChildPhotoPreview').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('removeNewChildPhoto').addEventListener('click', function() {
+    tempPhoto = null;
+    document.getElementById('newChildPhotoPreview').style.display = 'none';
+    document.getElementById('newChildPhoto').value = '';
+  });
+
+  document.getElementById('addChildToFamily').addEventListener('click', function() {
+    const name = document.getElementById('newChildName').value.trim();
+    const taller = document.getElementById('newChildTaller').value;
+    if (!name) return;
+    tempChildren.push({ name: name, taller: taller, photo: tempPhoto || null });
+    document.getElementById('newChildName').value = '';
+    document.getElementById('newChildTaller').value = 'casa';
+    tempPhoto = null;
+    document.getElementById('newChildPhotoPreview').style.display = 'none';
+    document.getElementById('newChildPhoto').value = '';
+    renderTempChildren();
+  });
+
+  document.getElementById('saveFamilyBtn').addEventListener('click', function() {
+    const name = document.getElementById('familyName').value.trim();
+    if (!name) { alert('Ingresa el nombre de la familia'); return; }
+    const editId = document.getElementById('editingFamilyId').value;
+    const id = editId || generateId();
+    families[id] = { name: name, children: tempChildren };
+    saveData();
+    document.getElementById('addFamilyForm').style.display = 'none';
+    renderFamiliesAdmin();
+  });
+
+  initFirebase();
+})();
+</script>
