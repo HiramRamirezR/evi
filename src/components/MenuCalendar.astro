@@ -39,7 +39,7 @@
     <h4>Número de menús</h4>
     <p class="hint">Cuántos menús diferentes hay. Se asignan en secuencia: 1, 2, 3...</p>
     <div class="menu-count-input">
-      <input type="number" id="menuCount" min="1" max="30" value="5">
+      <input type="number" id="menuCount" min="1" max="50" value="44">
     </div>
   </div>
 
@@ -47,6 +47,12 @@
     <h4>Días inhábiles</h4>
     <p class="hint">Haz clic en un día para marcarlo como inhabil.</p>
     <div class="disabled-days-grid" id="disabledDaysGrid"></div>
+  </div>
+
+  <div class="special-days-section">
+    <h4>Días con menú especial</h4>
+    <p class="hint">Haz clic en un día para marcarlo como menú especial. Los niños se asignan normal pero el menú se brinca.</p>
+    <div class="special-days-grid" id="specialDaysGrid"></div>
   </div>
 
   <div class="image-upload-area">
@@ -86,8 +92,10 @@
       2: { name: 'Grandes', children: [] }
     },
     calendar: {},
-    menuCount: 5
+    menuCount: 44
   };
+
+  const EMPTY_CAL = { disabledDays: [], specialDays: [], lastChildIndex: {} };
 
   function getFirebaseConfig() {
     return window.FIREBASE_CONFIG || null;
@@ -122,6 +130,7 @@
         const cal = val.calendar || {};
         for (const k in cal) {
           if (!cal[k].disabledDays) cal[k].disabledDays = [];
+          if (!cal[k].specialDays) cal[k].specialDays = [];
         }
         data.calendar = cal;
         renderAll();
@@ -153,7 +162,7 @@
       const parsed = JSON.parse(saved);
       data.groups = parsed.groups || data.groups;
       data.calendar = parsed.calendar || {};
-      data.menuCount = parsed.menuCount || 5;
+      data.menuCount = parsed.menuCount || 44;
     }
   }
 
@@ -261,6 +270,7 @@
       btn.classList.toggle('active', i === month);
     });
     renderDisabledDays();
+    renderSpecialDays();
   }
 
   function getDaysInMonth(year, month) {
@@ -316,7 +326,7 @@
   function toggleDisabledDay(day) {
     const key = getCalendarKey();
     if (!data.calendar[key]) {
-      data.calendar[key] = { disabledDays: [], lastChildIndex: {} };
+      data.calendar[key] = { ...EMPTY_CAL };
     }
     const idx = (data.calendar[key].disabledDays || []).indexOf(day);
     if (idx > -1) {
@@ -328,17 +338,69 @@
     renderDisabledDays();
   }
 
+  function getSpecialDays() {
+    const key = getCalendarKey();
+    return data.calendar[key]?.specialDays || [];
+  }
+
+  function renderSpecialDays() {
+    const grid = document.getElementById('specialDaysGrid');
+    grid.innerHTML = '';
+    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+    const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+    const specialDays = getSpecialDays();
+
+    for (let i = 0; i < firstDay; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'special-day-cell empty';
+      grid.appendChild(cell);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayOfWeek = new Date(currentYear, currentMonth, d).getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+      const cell = document.createElement('div');
+      cell.className = 'special-day-cell';
+      const isSpecial = specialDays.includes(d);
+
+      if (isSpecial) {
+        cell.classList.add('special');
+      }
+
+      cell.textContent = d;
+      cell.addEventListener('click', () => toggleSpecialDay(d));
+      grid.appendChild(cell);
+    }
+  }
+
+  function toggleSpecialDay(day) {
+    const key = getCalendarKey();
+    if (!data.calendar[key]) {
+      data.calendar[key] = { ...EMPTY_CAL };
+    }
+    const idx = (data.calendar[key].specialDays || []).indexOf(day);
+    if (idx > -1) {
+      data.calendar[key].specialDays.splice(idx, 1);
+    } else {
+      data.calendar[key].specialDays.push(day);
+    }
+    saveData();
+    renderSpecialDays();
+  }
+
   let lastCal = null;
 
   function generateCombinedCalendar() {
     const key = getCalendarKey();
     if (!data.calendar[key]) {
-      data.calendar[key] = { disabledDays: [], lastChildIndex: {} };
+      data.calendar[key] = { ...EMPTY_CAL };
     }
     const calData = data.calendar[key];
     const disabledDays = calData.disabledDays || [];
+    const specialDays = calData.specialDays || [];
     const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-    const menuCount = parseInt(document.getElementById('menuCount').value) || 5;
+    const menuCount = parseInt(document.getElementById('menuCount').value) || 44;
     data.menuCount = menuCount;
 
     function getAssignment(groupId) {
@@ -374,6 +436,7 @@
       const dow = new Date(currentYear, currentMonth, d).getDay();
       if (dow === 0 || dow === 6) continue;
       if (disabledDays.includes(d)) continue;
+      if (specialDays.includes(d)) continue;
       menuNumbers[d] = menuNumber;
       menuNumber = (menuNumber % menuCount) + 1;
     }
@@ -387,7 +450,8 @@
       menuCount: menuCount,
       firstDay: getFirstDayOfMonth(currentYear, currentMonth),
       daysInMonth,
-      disabledDays
+      disabledDays,
+      specialDays
     };
   }
 
@@ -440,7 +504,8 @@
       html += '<span class="day-number">' + d + '</span>';
 
       if (!isDisabled) {
-        const mn = cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '';
+        const isSpecial = cal.specialDays && cal.specialDays.includes(d);
+        const mn = isSpecial ? 'Especial' : (cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '');
         if (cal.assignment1 && cal.assignment1[d]) {
           html += '<span class="child-name group1">' + cal.assignment1[d] + ' <span class="menu-badge">Menú ' + mn + '</span></span>';
         }
@@ -585,7 +650,8 @@
       ctx.textBaseline = 'top';
       ctx.fillText(String(d), x + 8, y + 6);
 
-      const mn = cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '';
+      const isSpecial = cal.specialDays && cal.specialDays.includes(d);
+      const mn = isSpecial ? 'Especial' : (cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '');
       if (cal.assignment1 && cal.assignment1[d]) {
         ctx.font = 'bold 14px Arial, sans-serif';
         ctx.fillStyle = '#C83232';
@@ -670,7 +736,8 @@
     renderChildList(2);
     renderMonths();
     renderDisabledDays();
-    document.getElementById('menuCount').value = data.menuCount || 5;
+    renderSpecialDays();
+    document.getElementById('menuCount').value = data.menuCount || 44;
     if (bgImageData) {
       document.getElementById('bgPreview').src = bgImageData;
       document.getElementById('bgPreview').style.display = 'block';
@@ -697,19 +764,21 @@
     currentYear--;
     renderMonths();
     renderDisabledDays();
+    renderSpecialDays();
   });
 
   document.getElementById('nextYear').addEventListener('click', function() {
     currentYear++;
     renderMonths();
     renderDisabledDays();
+    renderSpecialDays();
   });
 
   document.getElementById('generateBtn').addEventListener('click', generateAll);
   document.getElementById('exportPdfBtn').addEventListener('click', exportPDF);
   document.getElementById('exportJpgBtn').addEventListener('click', exportJPG);
   document.getElementById('menuCount').addEventListener('change', function() {
-    data.menuCount = parseInt(this.value) || 5;
+    data.menuCount = parseInt(this.value) || 44;
     saveData();
   });
 
