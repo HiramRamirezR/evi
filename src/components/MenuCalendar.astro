@@ -439,9 +439,7 @@
       html += '<td class="' + cellClass + '">';
       html += '<span class="day-number">' + d + '</span>';
 
-      if (isDisabled) {
-        html += '<span class="no-classes">No hay clases</span>';
-      } else {
+      if (!isDisabled) {
         const mn = cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '';
         if (cal.assignment1 && cal.assignment1[d]) {
           html += '<span class="child-name group1">' + cal.assignment1[d] + ' <span class="menu-badge">Menú ' + mn + '</span></span>';
@@ -531,13 +529,13 @@
     }
 
     ctx.font = 'bold 22px Arial, sans-serif';
-    ctx.fillStyle = '#00A2C1';
+    ctx.fillStyle = '#000';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('Calendario de Menú - ' + MONTH_NAMES[currentMonth] + ' ' + currentYear, W / 2, y + 15);
     y += 40;
 
-    ctx.fillStyle = '#00A2C1';
+    ctx.fillStyle = '#000';
     ctx.fillRect(margin, y, W - margin * 2, headerH);
     ctx.font = 'bold 13px Arial, sans-serif';
     ctx.fillStyle = '#fff';
@@ -572,54 +570,35 @@
       const x = margin + col * colW;
 
       ctx.globalAlpha = 0.7;
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = isDis ? '#e9ecef' : '#fff';
       ctx.fillRect(x, y, colW, rowH);
 
-      if (!isDis) {
-        ctx.fillStyle = '#ffebef';
-        ctx.fillRect(x, y, colW, halfH);
-        ctx.fillStyle = '#e6f2ff';
-        ctx.fillRect(x, y + halfH, colW, halfH);
-      }
       ctx.globalAlpha = 1.0;
 
       ctx.strokeStyle = '#b4b4b4';
       ctx.lineWidth = 1;
       ctx.strokeRect(x, y, colW, rowH);
-      ctx.strokeStyle = '#c8c8c8';
-      ctx.beginPath();
-      ctx.moveTo(x, y + halfH);
-      ctx.lineTo(x + colW, y + halfH);
-      ctx.stroke();
 
-      ctx.font = 'bold 14px Arial, sans-serif';
+      ctx.font = 'bold 16px Arial, sans-serif';
       ctx.fillStyle = '#333';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(String(d), x + 8, y + 6);
 
-      if (isDis) {
-        ctx.font = 'italic 11px Arial, sans-serif';
-        ctx.fillStyle = '#999';
+      const mn = cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '';
+      if (cal.assignment1 && cal.assignment1[d]) {
+        ctx.font = 'bold 14px Arial, sans-serif';
+        ctx.fillStyle = '#C83232';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('No hay clases', x + colW / 2, y + halfH + 15);
-      } else {
-        const mn = cal.menuNumbers[d] ? 'M' + cal.menuNumbers[d] : '';
-        if (cal.assignment1 && cal.assignment1[d]) {
-          ctx.font = 'bold 12px Arial, sans-serif';
-          ctx.fillStyle = '#C83232';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(cal.assignment1[d] + ' - Chicos (' + mn + ')', x + colW / 2, y + halfH - 15, colW - 10);
-        }
-        if (cal.assignment2 && cal.assignment2[d]) {
-          ctx.font = 'bold 12px Arial, sans-serif';
-          ctx.fillStyle = '#1E50AA';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(cal.assignment2[d] + ' - Grandes (' + mn + ')', x + colW / 2, y + halfH + 20, colW - 10);
-        }
+        ctx.fillText(cal.assignment1[d] + ' - Chicos (' + mn + ')', x + colW / 2, y + halfH - 15, colW - 10);
+      }
+      if (cal.assignment2 && cal.assignment2[d]) {
+        ctx.font = 'bold 14px Arial, sans-serif';
+        ctx.fillStyle = '#1E50AA';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cal.assignment2[d] + ' - Grandes (' + mn + ')', x + colW / 2, y + halfH + 20, colW - 10);
       }
 
       col++;
