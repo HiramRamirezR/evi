@@ -119,7 +119,11 @@
       const val = snapshot.val();
       if (val) {
         data.groups = val.groups || data.groups;
-        data.calendar = val.calendar || {};
+        const cal = val.calendar || {};
+        for (const k in cal) {
+          if (!cal[k].disabledDays) cal[k].disabledDays = [];
+        }
+        data.calendar = cal;
         renderAll();
       }
     });
@@ -314,7 +318,7 @@
     if (!data.calendar[key]) {
       data.calendar[key] = { disabledDays: [], lastChildIndex: {} };
     }
-    const idx = data.calendar[key].disabledDays.indexOf(day);
+    const idx = (data.calendar[key].disabledDays || []).indexOf(day);
     if (idx > -1) {
       data.calendar[key].disabledDays.splice(idx, 1);
     } else {
