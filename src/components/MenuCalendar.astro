@@ -330,6 +330,13 @@ container.querySelectorAll('.btn-move').forEach(btn => {
     return currentYear + '-' + (currentMonth + 1);
   }
 
+  function getPrevMonthKey() {
+    if (currentMonth === 0) {
+      return (currentYear - 1) + '-12';
+    }
+    return currentYear + '-' + currentMonth;
+  }
+
   function getDisabledDays() {
     const key = getCalendarKey();
     return data.calendar[key]?.disabledDays || [];
@@ -450,11 +457,10 @@ container.querySelectorAll('.btn-move').forEach(btn => {
       const children = data.groups[groupId].children;
       if (children.length === 0) return null;
       let startIdx = 0;
-      if (currentMonth > 0) {
-        const prev = data.calendar[currentYear + '-' + currentMonth];
-        if (prev && prev.lastChildIndex && prev.lastChildIndex[groupId] !== undefined) {
-          startIdx = (prev.lastChildIndex[groupId] + 1) % children.length;
-        }
+      const prevKey = getPrevMonthKey();
+      const prev = data.calendar[prevKey];
+      if (prev && prev.lastChildIndex && prev.lastChildIndex[groupId] !== undefined) {
+        startIdx = (prev.lastChildIndex[groupId] + 1) % children.length;
       }
       const assignment = {};
       let idx = startIdx;
@@ -473,16 +479,28 @@ container.querySelectorAll('.btn-move').forEach(btn => {
     const a1 = getAssignment(1);
     const a2 = getAssignment(2);
 
-    let menuNumber = 1;
+    // Obtener último menú del mes anterior para continuar la secuencia
+    let startMenuNumber = 1;
+    const prevCal = data.calendar[getPrevMonthKey()];
+    if (prevCal && prevCal.lastMenuNumber) {
+      startMenuNumber = (prevCal.lastMenuNumber % menuCount) + 1;
+    }
+
+    let menuNumber = startMenuNumber;
     const menuNumbers = {};
+    let lastAssignedMenu = startMenuNumber;
     for (let d = 1; d <= daysInMonth; d++) {
       const dow = new Date(currentYear, currentMonth, d).getDay();
       if (dow === 0 || dow === 6) continue;
       if (disabledDays.includes(d)) continue;
       if (specialDays.includes(d)) continue;
       menuNumbers[d] = menuNumber;
+      lastAssignedMenu = menuNumber;
       menuNumber = (menuNumber % menuCount) + 1;
     }
+
+    // Guardar último menú asignado para el siguiente mes
+    calData.lastMenuNumber = lastAssignedMenu;
 
     saveData();
 
