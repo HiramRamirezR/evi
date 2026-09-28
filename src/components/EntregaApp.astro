@@ -231,8 +231,6 @@
   async function speakSequence(names) {
     for (const name of names) {
       await speak(name);
-      await new Promise(r => setTimeout(r, 500));
-      await speak(name);
       await new Promise(r => setTimeout(r, 1500));
     }
   }
@@ -246,7 +244,8 @@
     announcementQueue.push({
       familyId: notification.familyId,
       familyName: family.name,
-      children: salonChildren,
+      salonChildren: salonChildren,
+      allChildren: family.children,
       status: 'pending'
     });
 
@@ -268,10 +267,10 @@
     next.status = 'announcing';
     renderQueue();
 
-    const names = next.children.map(c => c.name);
+    const names = next.salonChildren.map(c => c.name);
     await speakSequence(names);
 
-    next.children.forEach(child => {
+    next.allChildren.forEach(child => {
       recentChildren.push({
         id: next.familyId + '-' + child.name,
         name: child.name,
@@ -301,7 +300,7 @@
     }
 
     announcing.forEach(item => {
-      item.children.forEach(child => {
+      item.salonChildren.forEach(child => {
         const card = document.createElement('div');
         card.className = 'salon-child-card announcing';
         const photoHtml = child.photo
