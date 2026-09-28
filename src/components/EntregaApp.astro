@@ -267,10 +267,12 @@
     next.status = 'announcing';
     renderQueue();
 
-    const names = next.salonChildren.map(c => c.name);
+    const childrenForTTS = next.salonChildren || next.children || [];
+    const names = childrenForTTS.map(c => c.name);
     await speakSequence(names);
 
-    next.allChildren.forEach(child => {
+    const childrenForRecent = next.allChildren || next.children || [];
+    childrenForRecent.forEach(child => {
       recentChildren.push({
         id: next.familyId + '-' + child.name,
         name: child.name,
@@ -300,7 +302,8 @@
     }
 
     announcing.forEach(item => {
-      item.salonChildren.forEach(child => {
+      const children = item.salonChildren || item.children || [];
+      children.forEach(child => {
         const card = document.createElement('div');
         card.className = 'salon-child-card announcing';
         const photoHtml = child.photo
@@ -324,8 +327,9 @@
       pending.forEach(item => {
         const row = document.createElement('div');
         row.className = 'queue-item';
+        const count = (item.salonChildren || item.children || []).length;
         row.innerHTML = '<span class="queue-family-name">' + item.familyName + '</span>' +
-          '<span class="queue-child-count">' + item.children.length + ' niño(s)</span>' +
+          '<span class="queue-child-count">' + count + ' niño(s)</span>' +
           '<span class="queue-waiting">⏳</span>';
         queueSection.appendChild(row);
       });
