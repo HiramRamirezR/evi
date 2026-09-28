@@ -315,6 +315,49 @@
   color: #FF6B6B;
 }
 
+.child-item .btn-edit {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.85em;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.child-item .btn-edit:hover {
+  color: #00A2C1;
+  background: #e0f7fa;
+}
+
+.child-item.editing {
+  background: #e0f7fa;
+  border: 2px solid #00A2C1;
+}
+
+.child-item.editing .btn-move,
+.child-item.editing .btn-remove,
+.child-item.editing .btn-edit {
+  display: none;
+}
+
+.child-item .edit-name-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 2px solid #00A2C1;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'Open Sans', sans-serif;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.child-item .edit-name-input:focus {
+  border-color: #006B7F;
+  box-shadow: 0 0 0 2px rgba(0, 162, 193, 0.2);
+}
+
 .add-child-form {
   display: flex;
   gap: 8px;

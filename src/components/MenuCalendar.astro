@@ -95,7 +95,7 @@
     menuCount: 44
   };
 
-  const EMPTY_CAL = { disabledDays: [], specialDays: [], lastChildIndex: {} };
+  const EMPTY_CAL = { disabledDays: [], specialDays: [], lastChildIndex: {}, lastMenuNumber: 0 };
 
   function getFirebaseConfig() {
     return window.FIREBASE_CONFIG || null;
@@ -170,35 +170,43 @@
     const container = document.getElementById('children' + groupId);
     const children = data.groups[groupId].children;
     container.innerHTML = '';
-    children.forEach((name, i) => {
-      const item = document.createElement('div');
-      item.className = 'child-item';
-      item.draggable = true;
-      item.dataset.index = i;
-      item.innerHTML = `
-        <span class="child-order">${i + 1}.</span>
-        <span class="child-name">${name}</span>
-        <button class="btn-move" data-dir="up" title="Subir">▲</button>
-        <button class="btn-move" data-dir="down" title="Bajar">▼</button>
-        <button class="btn-remove" title="Eliminar">✕</button>
-      `;
-      container.appendChild(item);
-    });
-
-    container.querySelectorAll('.btn-move').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const idx = parseInt(this.closest('.child-item').dataset.index);
-        const dir = this.dataset.dir;
-        moveChild(groupId, idx, dir);
+children.forEach((name, i) => {
+        const item = document.createElement('div');
+        item.className = 'child-item';
+        item.draggable = true;
+        item.dataset.index = i;
+        item.innerHTML = `
+          <span class="child-order">${i + 1}.</span>
+          <span class="child-name">${name}</span>
+          <button class="btn-move" data-dir="up" title="Subir">▲</button>
+          <button class="btn-move" data-dir="down" title="Bajar">▼</button>
+          <button class="btn-edit" title="Editar nombre">✏️</button>
+          <button class="btn-remove" title="Eliminar">✕</button>
+        `;
+        container.appendChild(item);
       });
-    });
 
-    container.querySelectorAll('.btn-remove').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const idx = parseInt(this.closest('.child-item').dataset.index);
-        removeChild(groupId, idx);
+container.querySelectorAll('.btn-move').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const idx = parseInt(this.closest('.child-item').dataset.index);
+          const dir = this.dataset.dir;
+          moveChild(groupId, idx, dir);
+        });
       });
-    });
+
+      container.querySelectorAll('.btn-remove').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const idx = parseInt(this.closest('.child-item').dataset.index);
+          removeChild(groupId, idx);
+        });
+      });
+
+      container.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const idx = parseInt(this.closest('.child-item').dataset.index);
+          startEditChild(groupId, idx);
+        });
+      });
 
     setupDragDrop(container, groupId);
   }
@@ -240,6 +248,41 @@
     data.groups[groupId].children.splice(index, 1);
     saveData();
     renderChildList(groupId);
+  }
+
+  function startEditChild(groupId, index) {
+    const item = document.querySelector(`#children${groupId} .child-item[data-index="${index}"]`);
+    if (!item || item.classList.contains('editing')) return;
+
+    const nameSpan = item.querySelector('.child-name');
+    const currentName = data.groups[groupId].children[index];
+
+    item.classList.add('editing');
+    nameSpan.innerHTML = `<input type="text" class="edit-name-input" value="${currentName}" maxlength="50">`;
+
+    const input = item.querySelector('.edit-name-input');
+    input.focus();
+    input.select();
+
+    const finishEdit = (save) => {
+      if (save) {
+        const newName = input.value.trim();
+        if (newName && newName !== currentName) {
+          data.groups[groupId].children[index] = newName;
+          saveData();
+        }
+      }
+      renderChildList(groupId);
+    };
+
+    input.addEventListener('blur', () => finishEdit(true));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        finishEdit(true);
+      } else if (e.key === 'Escape') {
+        finishEdit(false);
+      }
+    });
   }
 
   function moveChild(groupId, index, direction) {
