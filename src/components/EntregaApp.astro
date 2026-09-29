@@ -126,6 +126,8 @@
     taller3: 'Taller 3'
   };
   const RECENT_DURATION = 60000;
+  const NOTIF_MAX_AGE = 300000;
+  const TALLER_STORAGE_KEY = 'evi_entrega_taller';
 
   let families = {};
   let tempChildren = [];
@@ -201,6 +203,21 @@
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   }
 
+  function loadSavedTaller() {
+    try {
+      const saved = localStorage.getItem(TALLER_STORAGE_KEY);
+      return saved && TALLERES[saved] ? saved : null;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  function saveTaller(taller) {
+    try {
+      localStorage.setItem(TALLER_STORAGE_KEY, taller);
+    } catch(e) {}
+  }
+
   function compressPhoto(dataUrl) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -240,6 +257,10 @@
   }
 
   async function handleNotification(notification) {
+    if (currentMode !== 'salon' || !selectedTaller) return;
+    if (!notification.timestamp) return;
+    if (Date.now() - notification.timestamp > NOTIF_MAX_AGE) return;
+
     const family = families[notification.familyId];
     if (!family || !family.children) return;
     
@@ -625,7 +646,7 @@
 
   document.getElementById('modeSalon').addEventListener('click', function() {
     currentMode = 'salon';
-    selectedTaller = 'casa';
+    selectedTaller = loadSavedTaller() || 'casa';
     showView('salon');
     updateSalonTabs();
     if (recentTimer) clearInterval(recentTimer);
@@ -676,6 +697,7 @@
   document.querySelectorAll('.salon-tab').forEach(tab => {
     tab.addEventListener('click', function() {
       selectedTaller = this.dataset.taller;
+      saveTaller(selectedTaller);
       updateSalonTabs();
       document.getElementById('salonMain').innerHTML =
         '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
