@@ -71,5 +71,12 @@ import '../styles/admin.css';
         }
       });
     }
+
+    // Volver al panel desde Entrega App
+    window.addEventListener('entrega:back-to-panel', function() {
+      if (entregaApp) entregaApp.style.display = 'none';
+      panel.style.display = 'block';
+      calendar.style.display = 'none';
+    });
   })();
 </script>

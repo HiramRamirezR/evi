@@ -16,6 +16,7 @@
 
   <div class="entrega-control" id="entregaControl" style="display:none">
     <div class="entrega-topbar">
+      <button class="back-btn" id="backToPanel">← Panel</button>
       <button class="back-btn" id="backToModes">← Cambiar modo</button>
       <h3>🚗 Modo Entrega</h3>
       <button class="btn-gear" id="openEntregaSettings">⚙️</button>
@@ -25,6 +26,7 @@
 
   <div class="salon-control" id="salonControl" style="display:none">
     <div class="entrega-topbar">
+      <button class="back-btn" id="backToPanel2">← Panel</button>
       <button class="back-btn" id="backToModes2">← Cambiar modo</button>
       <h3>🏫 Modo Salón</h3>
       <button class="btn-gear" id="openEntregaSettings2">⚙️</button>
@@ -174,7 +176,7 @@
     const { ref: dbRef, onChildAdded } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
     onChildAdded(dbRef(db, 'entrega/notifications'), (snapshot) => {
       const val = snapshot.val();
-      if (val && val.familyId && selectedTaller) {
+      if (val && val.familyId) {
         handleNotification(val);
       }
     });
@@ -238,13 +240,27 @@
   async function handleNotification(notification) {
     const family = families[notification.familyId];
     if (!family || !family.children) return;
-    const salonChildren = family.children.filter(c => c.taller === selectedTaller);
+    
+    const targetTaller = (selectedTaller || '').trim().toLowerCase();
+    const salonChildren = family.children.filter(c => 
+      (c.taller || '').trim().toLowerCase() === targetTaller
+    );
+
+    // DEBUG: Log para diagnosticar Abi/Andrea
+    console.log('ENTREGA NOTIF:', {
+      familyId: notification.familyId,
+      familyName: family.name,
+      selectedTaller,
+      targetTaller,
+      allChildren: family.children.map(c => ({ name: c.name, taller: c.taller })),
+      salonChildren: salonChildren.map(c => c.name)
+    });
 
     announcementQueue.push({
       familyId: notification.familyId,
       familyName: family.name,
       salonChildren: salonChildren,
-      allChildren: family.children,
+      allChildren: salonChildren, // Solo niños del taller actual
       status: 'pending'
     });
 
@@ -640,6 +656,17 @@
     selectedTaller = null;
     if (recentTimer) clearInterval(recentTimer);
     showView('mode');
+  });
+
+  document.getElementById('backToPanel').addEventListener('click', function() {
+    window.dispatchEvent(new CustomEvent('entrega:back-to-panel'));
+  });
+
+  document.getElementById('backToPanel2').addEventListener('click', function() {
+    currentMode = null;
+    selectedTaller = null;
+    if (recentTimer) clearInterval(recentTimer);
+    window.dispatchEvent(new CustomEvent('entrega:back-to-panel'));
   });
 
   document.getElementById('openEntregaSettings').addEventListener('click', function() {
