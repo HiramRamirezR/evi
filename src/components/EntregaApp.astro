@@ -294,6 +294,7 @@
         id: next.familyId + '-' + child.name,
         name: child.name,
         photo: child.photo,
+        taller: child.taller,
         timestamp: Date.now()
       });
     });
@@ -324,36 +325,16 @@
         mainEl.innerHTML = '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
         return;
       }
-      // Solo mostrar el primer niño anunciándose (el que está hablando ahora)
+      // Solo mostrar la foto del primer niño anunciándose (el que está hablando ahora)
       const child = children[0];
       const card = document.createElement('div');
       card.className = 'salon-child-card announcing';
-      const hasPhoto = !!child.photo;
-      const photoHtml = hasPhoto
+      const photoHtml = child.photo
         ? '<img class="salon-child-photo" src="' + child.photo + '">'
         : '<div class="salon-child-photo-placeholder">👤</div>';
-      const nameHtml = hasPhoto ? '' : '<div class="salon-child-name">' + child.name + '</div>';
-      const indicatorHtml = hasPhoto ? '' : '<div class="salon-speaking-indicator"><span></span><span></span><span></span></div>';
-      card.innerHTML = photoHtml + nameHtml + indicatorHtml;
+      card.innerHTML = photoHtml;
       mainEl.appendChild(card);
     });
-
-    if (pending.length > 0) {
-      const queueSection = document.createElement('div');
-      queueSection.className = 'queue-section';
-
-      pending.forEach(item => {
-        const row = document.createElement('div');
-        row.className = 'queue-item';
-        const count = (item.salonChildren || item.children || []).length;
-        row.innerHTML = '<span class="queue-family-name">' + item.familyName + '</span>' +
-          '<span class="queue-child-count">' + count + ' niño(s)</span>' +
-          '<span class="queue-waiting">⏳</span>';
-        queueSection.appendChild(row);
-      });
-
-      mainEl.appendChild(queueSection);
-    }
   }
 
   function renderRecent() {
@@ -361,7 +342,13 @@
     const now = Date.now();
     recentChildren = recentChildren.filter(c => (now - c.timestamp) < RECENT_DURATION);
 
-    if (recentChildren.length === 0) {
+    // Filtrar por taller actual
+    const currentTaller = (selectedTaller || '').trim().toLowerCase();
+    const filteredRecent = recentChildren.filter(c => 
+      (c.taller || '').trim().toLowerCase() === currentTaller
+    );
+
+    if (filteredRecent.length === 0) {
       container.innerHTML = '<p class="recent-empty">No hay recientes</p>';
       return;
     }
@@ -373,7 +360,7 @@
       if (id) existingItems.set(id, el);
     });
 
-    recentChildren.forEach(child => {
+    filteredRecent.forEach(child => {
       const id = child.id || (child.familyId + '-' + child.name); // fallback
       let item = existingItems.get(id);
 
@@ -398,8 +385,8 @@
       }
     });
 
-    // Remover items expirados (que ya no están en recentChildren)
-    const currentIds = new Set(recentChildren.map(c => c.id || (c.familyId + '-' + c.name)));
+    // Remover items expirados (que ya no están en filteredRecent)
+    const currentIds = new Set(filteredRecent.map(c => c.id || (c.familyId + '-' + c.name)));
     existingItems.forEach((el, id) => {
       if (!currentIds.has(id)) el.remove();
     });
