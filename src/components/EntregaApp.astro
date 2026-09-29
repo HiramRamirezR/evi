@@ -342,11 +342,6 @@
       const queueSection = document.createElement('div');
       queueSection.className = 'queue-section';
 
-      const label = document.createElement('div');
-      label.className = 'queue-label';
-      label.textContent = 'Siguiente:';
-      queueSection.appendChild(label);
-
       pending.forEach(item => {
         const row = document.createElement('div');
         row.className = 'queue-item';
