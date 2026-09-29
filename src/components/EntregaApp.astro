@@ -239,7 +239,6 @@
     const family = families[notification.familyId];
     if (!family || !family.children) return;
     const salonChildren = family.children.filter(c => c.taller === selectedTaller);
-    if (salonChildren.length === 0) return;
 
     announcementQueue.push({
       familyId: notification.familyId,
@@ -303,6 +302,10 @@
 
     announcing.forEach(item => {
       const children = item.salonChildren || item.children || [];
+      if (children.length === 0) {
+        mainEl.innerHTML = '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
+        return;
+      }
       children.forEach(child => {
         const card = document.createElement('div');
         card.className = 'salon-child-card announcing';
@@ -347,18 +350,43 @@
       container.innerHTML = '<p class="recent-empty">No hay recientes</p>';
       return;
     }
-    container.innerHTML = '';
+
+    // Crear un mapa de items existentes por ID para no re-renderizar fotos
+    const existingItems = new Map();
+    container.querySelectorAll('.recent-item').forEach(el => {
+      const id = el.dataset.childId;
+      if (id) existingItems.set(id, el);
+    });
+
     recentChildren.forEach(child => {
+      const id = child.id || (child.familyId + '-' + child.name); // fallback
+      let item = existingItems.get(id);
+
       const remaining = 60 - Math.floor((now - child.timestamp) / 1000);
-      const photoHtml = child.photo
-        ? '<img class="recent-photo" src="' + child.photo + '">'
-        : '<div class="recent-photo-placeholder">👤</div>';
-      const item = document.createElement('div');
-      item.className = 'recent-item';
-      item.innerHTML = photoHtml +
-        '<span class="recent-name">' + child.name + '</span>' +
-        '<span class="recent-timer">' + remaining + 's</span>';
-      container.appendChild(item);
+
+      if (item) {
+        // Solo actualizar el timer, no tocar la foto ni el nombre
+        const timerEl = item.querySelector('.recent-timer');
+        if (timerEl) timerEl.textContent = remaining + 's';
+      } else {
+        // Nuevo item: crear completo
+        item = document.createElement('div');
+        item.className = 'recent-item';
+        item.dataset.childId = id;
+        const photoHtml = child.photo
+          ? '<img class="recent-photo" src="' + child.photo + '">'
+          : '<div class="recent-photo-placeholder">👤</div>';
+        item.innerHTML = photoHtml +
+          '<span class="recent-name">' + child.name + '</span>' +
+          '<span class="recent-timer">' + remaining + 's</span>';
+        container.appendChild(item);
+      }
+    });
+
+    // Remover items expirados (que ya no están en recentChildren)
+    const currentIds = new Set(recentChildren.map(c => c.id || (c.familyId + '-' + c.name)));
+    existingItems.forEach((el, id) => {
+      if (!currentIds.has(id)) el.remove();
     });
   }
 
