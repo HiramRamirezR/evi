@@ -2,6 +2,10 @@
 ---
 <div class="entrega-app" style="display:none">
   <div class="entrega-mode-select" id="entregaModeSelect">
+    <div class="mode-select-header">
+      <button class="back-btn" id="backToPanelMain">← Panel</button>
+      <h2>Entrega de Niños</h2>
+    </div>
     <div class="mode-card" id="modeEntrega">
       <div class="mode-icon">🚗</div>
       <h3>Modo Entrega</h3>
@@ -16,7 +20,6 @@
 
   <div class="entrega-control" id="entregaControl" style="display:none">
     <div class="entrega-topbar">
-      <button class="back-btn" id="backToPanel">← Panel</button>
       <button class="back-btn" id="backToModes">← Cambiar modo</button>
       <h3>🚗 Modo Entrega</h3>
       <button class="btn-gear" id="openEntregaSettings">⚙️</button>
@@ -26,7 +29,6 @@
 
   <div class="salon-control" id="salonControl" style="display:none">
     <div class="entrega-topbar">
-      <button class="back-btn" id="backToPanel2">← Panel</button>
       <button class="back-btn" id="backToModes2">← Cambiar modo</button>
       <h3>🏫 Modo Salón</h3>
       <button class="btn-gear" id="openEntregaSettings2">⚙️</button>
@@ -660,14 +662,7 @@
     showView('mode');
   });
 
-  document.getElementById('backToPanel').addEventListener('click', function() {
-    window.dispatchEvent(new CustomEvent('entrega:back-to-panel'));
-  });
-
-  document.getElementById('backToPanel2').addEventListener('click', function() {
-    currentMode = null;
-    selectedTaller = null;
-    if (recentTimer) clearInterval(recentTimer);
+  document.getElementById('backToPanelMain').addEventListener('click', function() {
     window.dispatchEvent(new CustomEvent('entrega:back-to-panel'));
   });
 

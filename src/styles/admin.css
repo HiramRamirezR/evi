@@ -1402,12 +1402,29 @@
 
 .entrega-mode-select {
   display: flex;
+  flex-direction: column;
   gap: 20px;
   justify-content: center;
-  align-items: stretch;
+  align-items: center;
   padding: 60px 20px;
   min-height: 80vh;
   flex-wrap: wrap;
+}
+
+.mode-select-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 20px;
+}
+
+.mode-select-header h2 {
+  font-size: 1.5em;
+  color: #333;
+  font-weight: 700;
+  margin: 0;
 }
 
 .mode-card {
