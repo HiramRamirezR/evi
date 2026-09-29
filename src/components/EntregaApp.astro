@@ -322,16 +322,18 @@
         mainEl.innerHTML = '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
         return;
       }
-      children.forEach(child => {
-        const card = document.createElement('div');
-        card.className = 'salon-child-card announcing';
-        const photoHtml = child.photo
-          ? '<img class="salon-child-photo" src="' + child.photo + '">'
-          : '<div class="salon-child-photo-placeholder">👤</div>';
-        card.innerHTML = photoHtml + '<div class="salon-child-name">' + child.name + '</div>' +
-          '<div class="salon-speaking-indicator"><span></span><span></span><span></span></div>';
-        mainEl.appendChild(card);
-      });
+      // Solo mostrar el primer niño anunciándose (el que está hablando ahora)
+      const child = children[0];
+      const card = document.createElement('div');
+      card.className = 'salon-child-card announcing';
+      const hasPhoto = !!child.photo;
+      const photoHtml = hasPhoto
+        ? '<img class="salon-child-photo" src="' + child.photo + '">'
+        : '<div class="salon-child-photo-placeholder">👤</div>';
+      const nameHtml = hasPhoto ? '' : '<div class="salon-child-name">' + child.name + '</div>';
+      const indicatorHtml = hasPhoto ? '' : '<div class="salon-speaking-indicator"><span></span><span></span><span></span></div>';
+      card.innerHTML = photoHtml + nameHtml + indicatorHtml;
+      mainEl.appendChild(card);
     });
 
     if (pending.length > 0) {

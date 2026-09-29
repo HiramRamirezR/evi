@@ -1653,6 +1653,20 @@
   text-align: center;
   box-shadow: 0 4px 20px rgba(0,162,193,0.2);
   animation: popIn 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.salon-child-card.announcing:has(.salon-child-photo) .salon-child-name,
+.salon-child-card.announcing:has(.salon-child-photo) .salon-speaking-indicator {
+  display: none;
+}
+
+.salon-child-card.announcing:has(.salon-child-photo) .salon-child-photo {
+  margin-bottom: 0;
 }
 
 @keyframes popIn {
@@ -1869,6 +1883,16 @@
   }
   .salon-child-card {
     padding: 20px;
+    min-height: 250px;
+  }
+
+  .salon-child-card.announcing:has(.salon-child-photo) .salon-child-name,
+  .salon-child-card.announcing:has(.salon-child-photo) .salon-speaking-indicator {
+    display: none;
+  }
+
+  .salon-child-card.announcing:has(.salon-child-photo) .salon-child-photo {
+    margin-bottom: 0;
   }
   .recent-photo,
   .recent-photo-placeholder {
