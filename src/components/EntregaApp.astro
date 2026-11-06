@@ -14,7 +14,7 @@
     <div class="mode-card" id="modeSalon">
       <div class="mode-icon">🏫</div>
       <h3>Modo Salón</h3>
-      <p>Para los salones. Selecciona tu taller y recibe notificaciones de los niños que se van.</p>
+      <p>Para los salones. Recibe notificaciones de todos los niños que se van, sin importar el taller.</p>
     </div>
   </div>
 
@@ -32,12 +32,6 @@
       <button class="back-btn" id="backToModes2">← Cambiar modo</button>
       <h3>🏫 Modo Salón</h3>
       <button class="btn-gear" id="openEntregaSettings2">⚙️</button>
-    </div>
-    <div class="salon-tabs" id="salonTabs">
-      <button class="salon-tab active" data-taller="casa">Casa de Niños</button>
-      <button class="salon-tab" data-taller="taller1">Taller 1</button>
-      <button class="salon-tab" data-taller="taller2">Taller 2</button>
-      <button class="salon-tab" data-taller="taller3">Taller 3</button>
     </div>
     <div class="salon-active" id="salonActive">
       <div class="salon-columns">
@@ -127,13 +121,11 @@
   };
   const RECENT_DURATION = 60000;
   const NOTIF_MAX_AGE = 300000;
-  const TALLER_STORAGE_KEY = 'evi_entrega_taller';
 
   let families = {};
   let tempChildren = [];
   let tempPhoto = null;
   let currentMode = null;
-  let selectedTaller = null;
   let recentChildren = [];
   let recentTimer = null;
   let previousView = null;
@@ -203,21 +195,6 @@
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   }
 
-  function loadSavedTaller() {
-    try {
-      const saved = localStorage.getItem(TALLER_STORAGE_KEY);
-      return saved && TALLERES[saved] ? saved : null;
-    } catch(e) {
-      return null;
-    }
-  }
-
-  function saveTaller(taller) {
-    try {
-      localStorage.setItem(TALLER_STORAGE_KEY, taller);
-    } catch(e) {}
-  }
-
   function compressPhoto(dataUrl) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -249,41 +226,19 @@
     });
   }
 
-  async function speakSequence(names) {
-    for (const name of names) {
-      await speak(name);
-      await new Promise(r => setTimeout(r, 1500));
-    }
-  }
-
   async function handleNotification(notification) {
-    if (currentMode !== 'salon' || !selectedTaller) return;
+    if (currentMode !== 'salon') return;
     if (!notification.timestamp) return;
     if (Date.now() - notification.timestamp > NOTIF_MAX_AGE) return;
 
     const family = families[notification.familyId];
     if (!family || !family.children) return;
-    
-    const targetTaller = (selectedTaller || '').trim().toLowerCase();
-    const salonChildren = family.children.filter(c => 
-      (c.taller || '').trim().toLowerCase() === targetTaller
-    );
-
-    // DEBUG: Log para diagnosticar Abi/Andrea
-    console.log('ENTREGA NOTIF:', {
-      familyId: notification.familyId,
-      familyName: family.name,
-      selectedTaller,
-      targetTaller,
-      allChildren: family.children.map(c => ({ name: c.name, taller: c.taller })),
-      salonChildren: salonChildren.map(c => c.name)
-    });
 
     announcementQueue.push({
       familyId: notification.familyId,
       familyName: family.name,
-      salonChildren: salonChildren,
-      allChildren: salonChildren, // Solo niños del taller actual
+      salonChildren: family.children,
+      allChildren: family.children,
       status: 'pending'
     });
 
@@ -303,11 +258,14 @@
 
     isAnnouncing = true;
     next.status = 'announcing';
-    renderQueue();
 
     const childrenForTTS = next.salonChildren || next.children || [];
-    const names = childrenForTTS.map(c => c.name);
-    await speakSequence(names);
+    for (const child of childrenForTTS) {
+      next.currentChild = child;
+      renderQueue();
+      await speak(child.name);
+      await new Promise(r => setTimeout(r, 1500));
+    }
 
     const childrenForRecent = next.allChildren || next.children || [];
     childrenForRecent.forEach(child => {
@@ -330,7 +288,6 @@
 
   function renderQueue() {
     const mainEl = document.getElementById('salonMain');
-    mainEl.innerHTML = '';
 
     const announcing = announcementQueue.filter(q => q.status === 'announcing');
     const pending = announcementQueue.filter(q => q.status === 'pending');
@@ -346,15 +303,53 @@
         mainEl.innerHTML = '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
         return;
       }
-      // Solo mostrar la foto del primer niño anunciándose (el que está hablando ahora)
-      const child = children[0];
-      const card = document.createElement('div');
-      card.className = 'salon-child-card announcing';
-      const photoHtml = child.photo
-        ? '<img class="salon-child-photo" src="' + child.photo + '">'
-        : '<div class="salon-child-photo-placeholder">👤</div>';
-      card.innerHTML = photoHtml;
-      mainEl.appendChild(card);
+      // Foto + nombre del niño que se está anunciando ahora
+      const child = item.currentChild || children[0];
+      const card = mainEl.querySelector('.salon-child-card');
+
+      if (!card) {
+        // Nueva anunciación: limpiar estado vacío y crear tarjeta (con animación de entrada)
+        mainEl.innerHTML = '';
+        const newCard = document.createElement('div');
+        newCard.className = 'salon-child-card announcing';
+        const photoHtml = child.photo
+          ? '<img class="salon-child-photo" src="' + child.photo + '">'
+          : '<div class="salon-child-photo-placeholder">👤</div>';
+        newCard.innerHTML = photoHtml + '<div class="salon-child-name">' + child.name + '</div>';
+        mainEl.appendChild(newCard);
+        return;
+      }
+
+      // Mismo ciclo: actualizar en sitio para evitar parpadeo/re-animación
+      const photoEl = card.querySelector('.salon-child-photo');
+      const placeholderEl = card.querySelector('.salon-child-photo-placeholder');
+      if (child.photo) {
+        if (photoEl) {
+          if (photoEl.getAttribute('src') !== child.photo) photoEl.src = child.photo;
+        } else {
+          const img = document.createElement('img');
+          img.className = 'salon-child-photo';
+          img.src = child.photo;
+          if (placeholderEl) card.replaceChild(img, placeholderEl);
+          else card.insertBefore(img, card.firstChild);
+        }
+      } else {
+        if (placeholderEl) {
+          // sin foto: nada que actualizar
+        } else if (photoEl) {
+          const ph = document.createElement('div');
+          ph.className = 'salon-child-photo-placeholder';
+          ph.textContent = '👤';
+          card.replaceChild(ph, photoEl);
+        } else {
+          const ph = document.createElement('div');
+          ph.className = 'salon-child-photo-placeholder';
+          ph.textContent = '👤';
+          card.insertBefore(ph, card.firstChild);
+        }
+      }
+      const nameEl = card.querySelector('.salon-child-name');
+      if (nameEl && nameEl.textContent !== child.name) nameEl.textContent = child.name;
     });
   }
 
@@ -363,13 +358,7 @@
     const now = Date.now();
     recentChildren = recentChildren.filter(c => (now - c.timestamp) < RECENT_DURATION);
 
-    // Filtrar por taller actual
-    const currentTaller = (selectedTaller || '').trim().toLowerCase();
-    const filteredRecent = recentChildren.filter(c => 
-      (c.taller || '').trim().toLowerCase() === currentTaller
-    );
-
-    if (filteredRecent.length === 0) {
+    if (recentChildren.length === 0) {
       container.innerHTML = '<p class="recent-empty">No hay recientes</p>';
       return;
     }
@@ -381,7 +370,7 @@
       if (id) existingItems.set(id, el);
     });
 
-    filteredRecent.forEach(child => {
+    recentChildren.forEach(child => {
       const id = child.id || (child.familyId + '-' + child.name); // fallback
       let item = existingItems.get(id);
 
@@ -406,8 +395,8 @@
       }
     });
 
-    // Remover items expirados (que ya no están en filteredRecent)
-    const currentIds = new Set(filteredRecent.map(c => c.id || (c.familyId + '-' + c.name)));
+    // Remover items expirados (que ya no están en recentChildren)
+    const currentIds = new Set(recentChildren.map(c => c.id || (c.familyId + '-' + c.name)));
     existingItems.forEach((el, id) => {
       if (!currentIds.has(id)) el.remove();
     });
@@ -646,9 +635,7 @@
 
   document.getElementById('modeSalon').addEventListener('click', function() {
     currentMode = 'salon';
-    selectedTaller = loadSavedTaller() || 'casa';
     showView('salon');
-    updateSalonTabs();
     if (recentTimer) clearInterval(recentTimer);
     recentTimer = setInterval(renderRecent, 1000);
   });
@@ -660,7 +647,6 @@
 
   document.getElementById('backToModes2').addEventListener('click', function() {
     currentMode = null;
-    selectedTaller = null;
     if (recentTimer) clearInterval(recentTimer);
     showView('mode');
   });
@@ -686,22 +672,6 @@
     } else {
       showView('mode');
     }
-  });
-
-  function updateSalonTabs() {
-    document.querySelectorAll('.salon-tab').forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.taller === selectedTaller);
-    });
-  }
-
-  document.querySelectorAll('.salon-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      selectedTaller = this.dataset.taller;
-      saveTaller(selectedTaller);
-      updateSalonTabs();
-      document.getElementById('salonMain').innerHTML =
-        '<div class="salon-empty-state"><div class="salon-waiting-icon">⏳</div><p>Esperando notificaciones...</p></div>';
-    });
   });
 
   document.getElementById('addFamilyBtn').addEventListener('click', function() {
