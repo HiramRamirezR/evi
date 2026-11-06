@@ -133,6 +133,32 @@
   let editingChildIndex = -1;
   let announcementQueue = [];
   let isAnnouncing = false;
+  let attendanceToday = {};
+
+  const CDMX_TZ = 'America/Mexico_City';
+  const NOON_HOUR_CDMX = 12;
+
+  function cdmxDateKey(ts) {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: CDMX_TZ, year: 'numeric', month: '2-digit', day: '2-digit'
+    }).format(new Date(ts));
+  }
+
+  function cdmxHour(ts) {
+    return parseInt(new Intl.DateTimeFormat('en-GB', {
+      timeZone: CDMX_TZ, hour: '2-digit', hourCycle: 'h23'
+    }).format(new Date(ts)), 10);
+  }
+
+  function formatCDMXTime(ts) {
+    return new Intl.DateTimeFormat('es-MX', {
+      timeZone: CDMX_TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).format(new Date(ts));
+  }
+
+  function childKey(name) {
+    return String(name).replace(/[.#$[\]/]/g, '_').trim();
+  }
 
   function getFirebaseConfig() {
     return window.FIREBASE_CONFIG || null;
@@ -153,6 +179,7 @@
       db = getDatabase(app);
       listenFamilies();
       listenNotifications();
+      listenAttendance();
     } catch(e) {
       console.error('Error inicializando Firebase', e);
     }
@@ -176,6 +203,47 @@
         handleNotification(val);
       }
     });
+  }
+
+  async function listenAttendance() {
+    if (!db) return;
+    const { ref: dbRef, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    const dateKey = cdmxDateKey(Date.now());
+    onValue(dbRef(db, 'entrega/attendance/' + dateKey), (snapshot) => {
+      attendanceToday = snapshot.val() || {};
+      if (currentMode === 'entrega') renderFamiliesGrid();
+    });
+  }
+
+  async function recordAttendance(familyId) {
+    if (!db) return;
+    const family = families[familyId];
+    if (!family || !family.children || family.children.length === 0) return;
+
+    const ts = Date.now();
+    const isArrival = cdmxHour(ts) < NOON_HOUR_CDMX;
+    const dateKey = cdmxDateKey(ts);
+
+    try {
+      const { ref: dbRef, runTransaction } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+      for (const child of family.children) {
+        if (!child || !child.name) continue;
+        const childRef = dbRef(db, 'entrega/attendance/' + dateKey + '/' + familyId + '/' + childKey(child.name));
+        await runTransaction(childRef, (current) => {
+          const data = current || {};
+          if (isArrival) {
+            if (data.llegada) return; // ya existe: no sobreescribir
+            data.llegada = ts;
+          } else {
+            if (data.salida) return; // ya existe: no sobreescribir
+            data.salida = ts;
+          }
+          return data;
+        });
+      }
+    } catch(e) {
+      console.error('Error guardando asistencia', e);
+    }
   }
 
   async function saveData() {
@@ -442,6 +510,22 @@
           : '<div class="family-card-photo-placeholder">👤</div>';
       }).join('');
 
+      let hoursHtml = '';
+      const attendance = attendanceToday[id];
+      if (attendance) {
+        const parts = children.map(child => {
+          const rec = attendance[childKey(child.name)];
+          if (!rec) return null;
+          const bits = [];
+          if (rec.llegada) bits.push(formatCDMXTime(rec.llegada));
+          if (rec.salida) bits.push(formatCDMXTime(rec.salida));
+          return bits.length ? bits.join(' → ') : null;
+        }).filter(Boolean);
+        if (parts.length > 0) {
+          hoursHtml = '<div class="family-card-hours">🕗 ' + parts.join(' · ') + '</div>';
+        }
+      }
+
       const card = document.createElement('div');
       card.className = 'family-card-delivery' + (isAnnounced ? ' announced' : '');
       card.dataset.familyId = id;
@@ -454,6 +538,7 @@
       card.innerHTML =
         '<div class="family-card-photos">' + photosHtml + '</div>' +
         '<div class="family-card-name">' + family.name + '</div>' +
+        hoursHtml +
         '<div class="family-card-children-count">' + children.length + ' niño(s)</div>' +
         badgeHtml;
       card.addEventListener('click', function() { triggerFamily(id); });
@@ -464,6 +549,8 @@
   async function triggerFamily(familyId) {
     announcedFamilies[familyId] = (announcedFamilies[familyId] || 0) + 1;
     renderFamiliesGrid();
+
+    recordAttendance(familyId);
 
     if (db) {
       try {

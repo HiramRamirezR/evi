@@ -1594,6 +1594,16 @@
   margin-bottom: 4px;
 }
 
+.family-card-hours {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: #00A2C1;
+  background: #e0f7fa;
+  border-radius: 8px;
+  padding: 3px 8px;
+  margin-bottom: 6px;
+}
+
 .family-card-children-count {
   font-size: 0.8em;
   color: #999;
