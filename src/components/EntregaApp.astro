@@ -513,16 +513,16 @@
       let hoursHtml = '';
       const attendance = attendanceToday[id];
       if (attendance) {
-        const parts = children.map(child => {
+        let latest = null;
+        children.forEach(child => {
           const rec = attendance[childKey(child.name)];
-          if (!rec) return null;
-          const bits = [];
-          if (rec.llegada) bits.push(formatCDMXTime(rec.llegada));
-          if (rec.salida) bits.push(formatCDMXTime(rec.salida));
-          return bits.length ? bits.join(' → ') : null;
-        }).filter(Boolean);
-        if (parts.length > 0) {
-          hoursHtml = '<div class="family-card-hours">🕗 ' + parts.join(' · ') + '</div>';
+          if (!rec) return;
+          if (rec.llegada && (!latest || rec.llegada > latest)) latest = rec.llegada;
+          if (rec.salida && (!latest || rec.salida > latest)) latest = rec.salida;
+        });
+        if (latest) {
+          const emoji = cdmxHour(latest) < NOON_HOUR_CDMX ? '🕗' : '🕓';
+          hoursHtml = '<div class="family-card-hours">' + emoji + ' ' + formatCDMXTime(latest) + '</div>';
         }
       }
 
